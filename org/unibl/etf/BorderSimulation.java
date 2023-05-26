@@ -16,8 +16,8 @@ public class BorderSimulation{
 
     public static void main(String args[]){
 
-        // Filling up the queue with Vehicles
-        if(createQueue() == false){
+        // Filling up the array with Vehicles
+        if(createArray() == false){
             // throw Exception
         }
 
@@ -33,7 +33,7 @@ public class BorderSimulation{
 
 
 
-    private static boolean createQueue(){
+    private static boolean createArray(){
         for(int i = 0; i < 5; i++){
             Bus b = new Bus();
             vehicleArray.add(b);
