@@ -36,5 +36,6 @@ public class Passenger{
 
     }
 
+
     // Can add some aditional atributes like if he is handicapped or something
 }

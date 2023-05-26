@@ -4,20 +4,19 @@ package org.unibl.etf.vehicles;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.Random;
-import java.util.TreeSet;
+import java.util.HashSet;
 
 
 public class Truck extends Vehicle{
-    private static int capacity = 3;
+    private static int CAPACITY = 3;
     private int loadCapacity;
     private int realLoad;
     private boolean documentationNeeded;
     
 
     public Truck(){
-        Random rand = new Random();
-        int numOfPeople = rand.nextInt(1, capacity + 1);
-
+        super(CAPACITY);
+        
         // Trucks can't transport anyone who isn't a driver
         for(int i = 1; i <= numOfPeople; i++){
             Passenger p = new Passenger("N.N. driver " + i, true);
@@ -25,7 +24,7 @@ public class Truck extends Vehicle{
         }
 
 
-
+        Random rand = new Random();
         // Documentation
         int x = rand.nextInt(2);  //  0 or 1 - 50% chance
         if(x == 0)
@@ -46,6 +45,20 @@ public class Truck extends Vehicle{
 
             this.realLoad += overload;
         }
+    }
+
+
+    public void run(){
+        
+    }
+
+
+    @Override
+    public String toString(){
+        if(documentationNeeded == true)
+            return "Truck (" + realLoad + "kg -with documentation)";
+        else
+            return "Truck (" + realLoad + "kg -without documentation)";
     }
     
 }

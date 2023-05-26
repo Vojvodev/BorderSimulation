@@ -3,21 +3,16 @@ package org.unibl.etf.vehicles;
 
 import org.unibl.etf.passengers.Passenger;
 
-import java.util.Random;
-import java.util.TreeSet;
+import java.util.HashSet;
 
 
 public class Car extends Vehicle{
-    private static final int capacity = 5;
+    private static final int CAPACITY = 5;
     
 
     
     public Car(){
-        super();
-
-        Random rand = new Random();
-        int numOfPeople = rand.nextInt(1, capacity + 1);
-
+        super(CAPACITY);
 
         // Each car has only 1 driver (car's owner)
         Passenger p = new Passenger("N.N. driver", true);
@@ -29,4 +24,14 @@ public class Car extends Vehicle{
         }
     }
 
+
+    public void run(){
+        // Kreirati tri objekta pa ih zakljucati i provjeravati kakvo je vozilo?    KAKO?
+    }
+
+
+    @Override
+    public String toString(){
+        return "Car with " + numOfPeople + " passengers.";
+    }
 }

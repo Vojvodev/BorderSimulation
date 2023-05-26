@@ -3,18 +3,17 @@ package org.unibl.etf.vehicles;
 
 import org.unibl.etf.passengers.Passenger;
 
-import java.util.Random;
-import java.util.TreeSet;
+
+import java.util.HashSet;
 
 
 public class Bus extends Vehicle{
-    private static final int capacity = 52; 
+    private static final int CAPACITY = 52; 
 
     
     public Bus(){
-        Random rand = new Random();
-        int numOfPeople = rand.nextInt(1, capacity + 1);
-
+        super(CAPACITY);
+        
         // Each bus has 1 driver or if there's more than 1 passenger - there are 2 drivers
         if(numOfPeople == 1){                                   // Only 1 in the bus and he is the driver
             Passenger p = new Passenger("N.N. driver", true);
@@ -40,7 +39,16 @@ public class Bus extends Vehicle{
             }
         }
 
-
     }
-    
+
+
+    public void run(){
+        
+    }
+
+
+    @Override
+    public String toString(){
+        return "Bus with " + numOfPeople + " passengers.";
+    }
 }
