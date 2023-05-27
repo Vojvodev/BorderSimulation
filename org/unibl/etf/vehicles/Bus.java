@@ -43,12 +43,77 @@ public class Bus extends Vehicle{
 
 
     public void run(){
-        
+
+        // Police terminal
+        synchronized(){
+            int numOfBadDrivers = 0;
+            int numOfBadPassengers = 0;
+            Passenger temp = new Passenger("temp", true);
+
+            for(Passenger p : passengers){
+                sleep(100);
+                if(p.getIdentification().isFakeId()){
+                    // TODO: IZBACITI PUTNIKA IZ AUTA
+
+                    if(p.isDriver()){
+                        numOfBadDrivers++;
+                        temp = p;
+                    }
+                    else{
+                        numOfBadPassengers++;
+                    }
+
+
+                    if(numOfBadDrivers == 2){
+                        // TODO: EVIDENTIRA SE DA JE IZBACEN AUTOBUS CIJELI
+                        // interrupt();  ili   exception       // Da ga prekine provjeravati i da ga izbaci iz liste vozila
+                    }
+                }
+            }
+
+            // TODO : EVIDENCIJA JE BROJ IZBACENIH PUTNIKA I AKO JE IZBACEN JEDAN VOZAC
+
+
+        }
+
+        // Then they go to the border crossing
+        synchronized(){
+            int numOfBadDrivers = 0;
+            int numOfBadPassengers = 0;
+            Passenger temp = new Passenger("temp", true);
+
+            for(Passenger p : passengers){
+                sleep(100);
+
+                if(p.hasForbiddenLuggage()){
+                    // TODO: IZBACITI PUTNIKA IZ AUTOBUSA
+
+                    if(p.isDriver()){
+                        numOfBadDrivers++;
+                        temp = p;
+                    }
+                    else{
+                        numOfBadPassengers++;
+                    }
+
+                    if(numOfBadDrivers == 2){
+                        // TODO: EVIDENTIRA SE DA JE IZBACEN AUTOBUS CIJELI TXT FAJL
+                        // interrupt();  ili   exception       // Da ga prekine provjeravati i da ga izbaci iz liste vozila
+                    }
+                }
+
+            }
+
+            // TODO : EVIDENCIJA JE BROJ IZBACENIH PUTNIKA I AKO JE IZBACEN JEDAN VOZAC - ZAPAMCENO MU JE IME TXT FAJL
+
+        }
+
+
     }
 
 
     @Override
     public String toString(){
-        return "Bus with " + numOfPeople + " passengers.";
+        return "Bus " + "(id: " + id + ") with " + numOfPeople + " passengers.";
     }
 }

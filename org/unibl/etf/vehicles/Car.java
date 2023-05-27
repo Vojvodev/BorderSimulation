@@ -26,12 +26,36 @@ public class Car extends Vehicle{
 
 
     public void run(){
-        // Kreirati tri objekta pa ih zakljucati i provjeravati kakvo je vozilo?    KAKO?
+        // Kreirati tri objekta pa ih zakljucati     KAKO?
+
+        // Police terminal
+        synchronized(){
+            int numOfBadPassengers = 0;
+            for(Passenger p : passengers){
+                sleep(500);
+                if(p.getIdentification().isFakeId()){
+                    if(p.isDriver()){
+                        // TODO: EVIDENTIRA SE DA JE AUTO IZBACENO
+                        // interrupt();         // Da ga prekine provjeravati i da ga izbaci iz liste vozila
+                    }
+                    // TODO: IZBACITI PUTNIKA IZ AUTA
+                }
+            }
+
+            // TODO : EVIDENTIRATI KOLIKO PUTNIKA JE IZBACENO
+                    
+        }
+
+        // Then they go to the border crossing
+        synchronized(){
+            sleep(2000);
+        }
+
     }
 
 
     @Override
     public String toString(){
-        return "Car with " + numOfPeople + " passengers.";
+        return "Car " + "(id: " + id + ") with " + numOfPeople + " passengers.";
     }
 }
