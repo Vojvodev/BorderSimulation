@@ -3,8 +3,12 @@ package org.unibl.etf.vehicles;
 
 import org.unibl.etf.passengers.Passenger;
 
-
 import java.util.HashSet;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 
 
 public class Bus extends Vehicle{
@@ -14,7 +18,7 @@ public class Bus extends Vehicle{
     public Bus(){
         super(CAPACITY);
         
-        // Each bus has 1 driver or if there's more than 1 passenger - there are 2 drivers
+        // Each bus has at least 1 driver or if there's more than 1 passenger - there are 2 drivers
         if(numOfPeople == 1){                                   // Only 1 in the bus and he is the driver
             Passenger p = new Passenger("N.N. driver", true);
             this.passengers.add(p);
@@ -43,21 +47,43 @@ public class Bus extends Vehicle{
 
 
     public void run(){
+        int numOfBadDrivers = 0;
+
+        // Read p1 & p2
+
+        if(p1 == "F" && p2 == "F"){
+            try {
+                wait();
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+        else if(p1 == "T"){
+            // Change p1 to "F" --- do --- change back p1 to "T"
+        }
+        else if(p2 == "T"){
+            // Change p2 to "F" --- do --- change back p2 to "T"
+        }
+        
 
         // Police terminal
-        synchronized(){
-            int numOfBadDrivers = 0;
+        {
             int numOfBadPassengers = 0;
-            Passenger temp = new Passenger("temp", true);
 
             for(Passenger p : passengers){
                 sleep(100);
                 if(p.getIdentification().isFakeId()){
-                    // TODO: IZBACITI PUTNIKA IZ AUTA
+                    passengers.remove(p);
+
+                    // Passenger added to the naughty list
+                    boolean append1 = (new File(SERIALIZATION_FILE)).exists();
+                    ObjectOutputStream stream1 = new ObjectOutputStream(new FileOutputStream(SERIALIZATION_FILE, append1));
+                    stream1.writeObject(p);
+                    stream1.close();
+
 
                     if(p.isDriver()){
                         numOfBadDrivers++;
-                        temp = p;
                     }
                     else{
                         numOfBadPassengers++;
@@ -65,47 +91,75 @@ public class Bus extends Vehicle{
 
 
                     if(numOfBadDrivers == 2){
-                        // TODO: EVIDENTIRA SE DA JE IZBACEN AUTOBUS CIJELI
+                        // Noted that the bus has been rejected
+                        boolean append = (new File(POLICE_EVIDENTATION)).exists();
+                        BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
+                        writer1.write("SVI;AUTOBUS;" + this.id);
+                        writer1.close();
+
                         // interrupt();  ili   exception       // Da ga prekine provjeravati i da ga izbaci iz liste vozila
                     }
                 }
             }
 
-            // TODO : EVIDENCIJA JE BROJ IZBACENIH PUTNIKA I AKO JE IZBACEN JEDAN VOZAC
-
+            // How many passengers are thrown out
+            boolean append = (new File(POLICE_EVIDENTATION)).exists();
+            BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
+            writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOBUS;" + this.id + ";" + numOfBadDrivers);
+            writer1.close();
 
         }
 
+        // Read c1
+
         // Then they go to the border crossing
-        synchronized(){
-            int numOfBadDrivers = 0;
+        if(c1 == "F"){
+            try {
+                wait();
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+        else{
+
+            // Change c1 to "F"
+
             int numOfBadPassengers = 0;
-            Passenger temp = new Passenger("temp", true);
 
             for(Passenger p : passengers){
                 sleep(100);
 
                 if(p.hasForbiddenLuggage()){
-                    // TODO: IZBACITI PUTNIKA IZ AUTOBUSA
+                    passengers.remove(p);
 
                     if(p.isDriver()){
                         numOfBadDrivers++;
-                        temp = p;
                     }
                     else{
                         numOfBadPassengers++;
                     }
 
                     if(numOfBadDrivers == 2){
-                        // TODO: EVIDENTIRA SE DA JE IZBACEN AUTOBUS CIJELI TXT FAJL
+                        // Noted that the bus has been rejected
+                        boolean append = (new File(BORDER_EVIDENTATION)).exists();
+                        BufferedWriter writer1 = new BufferedWriter(new FileWriter(BORDER_EVIDENTATION, append));
+                        writer1.write("SVI;AUTOBUS;" + this.id);
+                        writer1.close();
+
                         // interrupt();  ili   exception       // Da ga prekine provjeravati i da ga izbaci iz liste vozila
                     }
                 }
 
             }
 
-            // TODO : EVIDENCIJA JE BROJ IZBACENIH PUTNIKA I AKO JE IZBACEN JEDAN VOZAC - ZAPAMCENO MU JE IME TXT FAJL
+            // How many passengers are thrown out
+            boolean append = (new File(BORDER_EVIDENTATION)).exists();
+            BufferedWriter writer1 = new BufferedWriter(new FileWriter(BORDER_EVIDENTATION, append));
+            writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOBUS;" + this.id + ";" + numOfBadDrivers);
+            writer1.close();
 
+
+            // Change c1 back to "T"
         }
 
 
