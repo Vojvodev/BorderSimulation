@@ -8,10 +8,12 @@ import org.unibl.etf.vehicles.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Stack;
 
 
 public class BorderSimulation{
-    private static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();
+    public static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();
+    public static Stack<Vehicle> vehicleStack = new Stack<Vehicle>();
 
 
     public static void main(String args[]){
@@ -21,13 +23,29 @@ public class BorderSimulation{
             // throw Exception
         }
 
+        for(Vehicle v : vehicleArray){
+            vehicleStack.push(v);
+        }
+
         // Simulation start
         System.out.println("---Simulation started---\n");
-        for(Vehicle v : vehicleArray){
+        for(Vehicle v : vehicleStack){
             v.start();
         }
 
+
+        try{
+            for(Vehicle v : vehicleStack){
+            v.join();
+            }
+        }
+        catch(InterruptedException e){
+            System.out.println(e);
+        }
         
+        
+        System.out.println("---Simulation ended---\n");
+
 
     }
 

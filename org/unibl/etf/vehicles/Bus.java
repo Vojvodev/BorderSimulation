@@ -46,6 +46,7 @@ public class Bus extends Vehicle{
     }
 
 
+    @Override
     public void run(){
         int numOfBadDrivers = 0;
 
