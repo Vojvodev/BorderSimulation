@@ -20,7 +20,7 @@ public class BorderSimulation{
 
         // Filling up the array with Vehicles
         if(createArray() == false){
-            // throw Exception
+            System.out.println("Error creating an array of vehicles!");
         }
 
         for(Vehicle v : vehicleArray){

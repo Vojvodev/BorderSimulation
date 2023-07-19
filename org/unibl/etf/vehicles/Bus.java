@@ -1,14 +1,13 @@
 package org.unibl.etf.vehicles;
 
-
+import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.HashSet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+
 
 
 public class Bus extends Vehicle{
@@ -49,39 +48,62 @@ public class Bus extends Vehicle{
     @Override
     public void run(){
         int numOfBadDrivers = 0;
+        boolean busRejected = false;
+        int changed = 1;
 
-        // Read p1 & p2
 
-        if(p1 == "F" && p2 == "F"){
-            try {
-                wait();
-            } catch (Exception e) {
-                // TODO: handle exception
+        synchronized(stackLock){
+            while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
+                try {
+                    stackLock.wait();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
             }
-        }
-        else if(p1 == "T"){
-            // Change p1 to "F" --- do --- change back p1 to "T"
-        }
-        else if(p2 == "T"){
-            // Change p2 to "F" --- do --- change back p2 to "T"
         }
         
 
-        // Police terminal
-        {
+        checkTerminals();
+        if(p1 == "F" && p2 == "F"){
+            synchronized(this){
+                try {
+                    wait();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        }
+        else if(p1 == "T" || p2 == "T"){
+            // Change back to "F" -busy
+            if(p1 == "T"){
+                changeTerminal("p1");
+                changed = 1;
+            }
+            else if(p1 == "F" && p2 == "T"){
+                changeTerminal("p2");
+                changed = 2;
+            }
+
+            synchronized(stackLock){
+                BorderSimulation.vehicleStack.pop();
+                stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            }
+
+
+            // Police terminal
             int numOfBadPassengers = 0;
 
             for(Passenger p : passengers){
-                sleep(100);
+                try {
+                    sleep(100);
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+
                 if(p.getIdentification().isFakeId()){
-                    passengers.remove(p);
-
                     // Passenger added to the naughty list
-                    boolean append1 = (new File(SERIALIZATION_FILE)).exists();
-                    ObjectOutputStream stream1 = new ObjectOutputStream(new FileOutputStream(SERIALIZATION_FILE, append1));
-                    stream1.writeObject(p);
-                    stream1.close();
-
+                    badPassengers.add(p);
+                    passengers.remove(p);
 
                     if(p.isDriver()){
                         numOfBadDrivers++;
@@ -90,45 +112,71 @@ public class Bus extends Vehicle{
                         numOfBadPassengers++;
                     }
 
-
                     if(numOfBadDrivers == 2){
                         // Noted that the bus has been rejected
-                        boolean append = (new File(POLICE_EVIDENTATION)).exists();
-                        BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
-                        writer1.write("SVI;AUTOBUS;" + this.id);
-                        writer1.close();
-
-                        // interrupt();  ili   exception       // Da ga prekine provjeravati i da ga izbaci iz liste vozila
+                        busRejected = true;
                     }
+
                 }
+
             }
+
+            // Serialized data about every illegal passenger
+            serializeBadPassengers();
+
+            // Only the info that the bus has been rejected from the border
+            if(busRejected)
+                createEvidentationBus(POLICE_EVIDENTATION);
 
             // How many passengers are thrown out
-            boolean append = (new File(POLICE_EVIDENTATION)).exists();
-            BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
-            writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOBUS;" + this.id + ";" + numOfBadDrivers);
-            writer1.close();
+            createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers, numOfBadDrivers);
+
+
+
+            // Change back to "T" -free
+            if(changed == 1){
+                changeTerminal("p1");
+            }
+            else if(changed == 2){
+                changeTerminal("p2");
+            }
+            notifyAll();
 
         }
+        
 
-        // Read c1
+        if(busRejected)
+            return;
+
 
         // Then they go to the border crossing
+
+
+        checkTerminals();
         if(c1 == "F"){
-            try {
-                wait();
-            } catch (Exception e) {
-                // TODO: handle exception
+            synchronized(this){
+                try {
+                    wait();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
             }
         }
-        else{
+        else if(c1 == "T"){
+            // Change back to "F" -busy
+            changeTerminal("c1");
+            notifyAll();                            // Notify when changing to F ???
 
-            // Change c1 to "F"
 
+            // Border logic
             int numOfBadPassengers = 0;
 
             for(Passenger p : passengers){
-                sleep(100);
+                try {
+                    sleep(100);
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
 
                 if(p.hasForbiddenLuggage()){
                     passengers.remove(p);
@@ -142,28 +190,55 @@ public class Bus extends Vehicle{
 
                     if(numOfBadDrivers == 2){
                         // Noted that the bus has been rejected
-                        boolean append = (new File(BORDER_EVIDENTATION)).exists();
-                        BufferedWriter writer1 = new BufferedWriter(new FileWriter(BORDER_EVIDENTATION, append));
-                        writer1.write("SVI;AUTOBUS;" + this.id);
-                        writer1.close();
-
-                        // interrupt();  ili   exception       // Da ga prekine provjeravati i da ga izbaci iz liste vozila
+                        busRejected = true;
                     }
+
                 }
 
             }
 
+            // Only the info that the bus has been rejected from the border
+            if(busRejected)
+                createEvidentationBus(BORDER_EVIDENTATION);
+
             // How many passengers are thrown out
-            boolean append = (new File(BORDER_EVIDENTATION)).exists();
-            BufferedWriter writer1 = new BufferedWriter(new FileWriter(BORDER_EVIDENTATION, append));
+            createEvidentationPassengers(BORDER_EVIDENTATION, numOfBadPassengers, numOfBadDrivers);
+
+
+            // Change back to "T" -free
+            changeTerminal("c1");
+            notifyAll();
+
+        }
+    
+    }
+
+
+    // Notes that the bus has been rejected
+    synchronized private void createEvidentationBus(String FILE){
+        boolean append = (new File(FILE)).exists();
+        try{
+            BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
+            writer1.write("SVI;AUTOBUS;" + this.id);
+            writer1.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+
+    // Serializes how many passengers are thrown out
+    synchronized private void createEvidentationPassengers(String FILE, int numOfBadPassengers, int numOfBadDrivers){
+        boolean append = (new File(FILE)).exists();
+        try{
+            BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
             writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOBUS;" + this.id + ";" + numOfBadDrivers);
             writer1.close();
-
-
-            // Change c1 back to "T"
         }
-
-
+        catch(Exception e){
+            System.out.println(e);
+        }
     }
 
 

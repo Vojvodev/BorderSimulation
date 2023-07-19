@@ -1,6 +1,6 @@
 package org.unibl.etf.vehicles;
 
-
+import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.Random;
@@ -8,8 +8,7 @@ import java.util.HashSet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+
 
 
 public class Truck extends Vehicle{
@@ -55,101 +54,162 @@ public class Truck extends Vehicle{
 
     @Override
     public void run(){
-        
-        // Read p3
+        boolean truckRejected = false;
 
-        // Police terminal
-        if(p3 == "F"){
-            try {
-                wait();
-            } catch (Exception e) {
-                // TODO: handle exception
+        synchronized(stackLock){
+            while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
+                try {
+                    stackLock.wait();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
             }
         }
-        else{
 
-            // Change p3 to "F"
 
+        checkTerminals();
+        if(p3 == "F"){
+            synchronized(this){
+                try {
+                    wait();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        }
+        else if(p3 == "T"){
+            // Change back to "F" -busy
+            changeTerminal("p3");
+
+
+            synchronized(stackLock){
+                BorderSimulation.vehicleStack.pop();
+                stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            }
+            
+            // Police terminal
+            
             int numOfBadDrivers = 0;
             int numOfBadPassengers = 0;
-
+    
             for(Passenger p : passengers){
-                sleep(500);
-                if(p.getIdentification().isFakeId()){
-                    passengers.remove(p);
+                try {
+                    sleep(500);
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
 
+                if(p.getIdentification().isFakeId()){
                     // Passenger added to the naughty list
-                    boolean append1 = (new File(SERIALIZATION_FILE)).exists();
-                    ObjectOutputStream stream1 = new ObjectOutputStream(new FileOutputStream(SERIALIZATION_FILE, append1));
-                    stream1.writeObject(p);
-                    stream1.close();
+                    badPassengers.add(p);
+                    passengers.remove(p);
 
                     if(p.isDriver()){
                         numOfBadDrivers++;
                     }
-
+    
                     if(numOfBadDrivers == 3){
                         // Noted that the truck has been rejected
-                        boolean append = (new File(POLICE_EVIDENTATION)).exists();
-                        BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
-                        writer1.write("SVI;KAMION;" + this.id);
-                        writer1.close();
-
-                        // interrupt();  ili   exception       // Da ga prekine provjeravati i da ga izbaci iz liste vozila
+                        truckRejected = true;
                     }
+
                 }
+
             }
 
-            // How many passengers are thrown out
-            boolean append = (new File(POLICE_EVIDENTATION)).exists();
-            BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
-            writer1.write("PUTNIK;" + numOfBadPassengers + ";KAMION;" + this.id);
-            writer1.close();
+            // Serialized data about every illegal passenger
+            serializeBadPassengers();
 
+            // Only the info that the bus has been rejected from the border
+            if(truckRejected)
+                createEvidentationTruck(POLICE_EVIDENTATION);
+
+            // How many passengers are thrown out
+            createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers);
+    
 
             // Change p3 back to "T"
+            changeTerminal("p3");
+            notifyAll();
 
         }
-
-
-        // Read c2
+    
+        if(truckRejected)
+            return;
 
 
         // Then they go to the border crossing
+
+
+        checkTerminals();
         if(c2 == "F"){
-            try {
-                wait();
-            } catch (Exception e) {
-                // TODO: handle exception
+            synchronized(this){
+                try {
+                    wait();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
             }
         }
-        else{
+        else if(c2 == "T"){
+            // Change back to "F" -busy
+            changeTerminal("c2");
+            notifyAll();                    // Notify nakon promjene u F ???
 
-            // Change c2 to "F"
+            try {
+                sleep(500);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
 
-            sleep(500);
             if(this.isDocumentationNeeded()){
                 if(realLoad > loadCapacity){
                     // Noted that the truck has been rejected
-                    boolean append = (new File(BORDER_EVIDENTATION)).exists();
-                    BufferedWriter writer1 = new BufferedWriter(new FileWriter(BORDER_EVIDENTATION, append));
-                    writer1.write("SVI;KAMION;" + this.id);
-                    writer1.close();
-
-                    // TODO: IZBACITI KAMION IZ LISTE --- interrupt() neki
+                    truckRejected = true;
+                    createEvidentationTruck(BORDER_EVIDENTATION);
                 }    
             }
             
 
             // Change c2 back to "T"
+            changeTerminal("c2");
+            notifyAll();
 
         }
+
     }
 
 
 
     public boolean isDocumentationNeeded(){
         return documentationNeeded;
+    }
+
+    // Notes that the bus has been rejected
+    synchronized private void createEvidentationTruck(String FILE){
+        boolean append = (new File(FILE)).exists();
+        try{
+            BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
+            writer1.write("SVI;KAMION;" + this.id);
+            writer1.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+
+
+    // Serializes how many passengers are thrown out
+    synchronized private void createEvidentationPassengers(String FILE, int numOfBadPassengers){
+        boolean append = (new File(FILE)).exists();
+            try{
+                BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
+                writer1.write("PUTNIK;" + numOfBadPassengers + ";KAMION;" + this.id);
+                writer1.close();
+            }
+            catch(Exception e){
+                System.out.println(e);
+            }
     }
 
 
