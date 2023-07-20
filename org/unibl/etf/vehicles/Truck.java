@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
-
+import java.util.Iterator;
 
 
 public class Truck extends Vehicle{
@@ -36,7 +36,7 @@ public class Truck extends Vehicle{
         else 
             this.documentationNeeded = false;
         
-
+        
         // Load 
         this.loadCapacity = rand.nextInt(2, 11) * 1000;  // Random capacity between 2_000kg and 10_000kg
         this.realLoad = this.loadCapacity;
@@ -67,9 +67,9 @@ public class Truck extends Vehicle{
         }
 
 
-        checkTerminals();
-        if(p3 == "F"){
-            synchronized(this){
+        synchronized(this){
+            checkTerminals();
+            while(p3 == "F"){
                 try {
                     wait();
                 } catch (Exception e) {
@@ -77,7 +77,7 @@ public class Truck extends Vehicle{
                 }
             }
         }
-        else if(p3 == "T"){
+        if(p3 == "T"){
             // Change back to "F" -busy
             changeTerminal("p3");
 
@@ -92,7 +92,9 @@ public class Truck extends Vehicle{
             int numOfBadDrivers = 0;
             int numOfBadPassengers = 0;
     
-            for(Passenger p : passengers){
+            Iterator<Passenger> iterator = passengers.iterator();
+            while(iterator.hasNext()){
+                Passenger p = iterator.next();
                 try {
                     sleep(500);
                 } catch (Exception e) {
@@ -102,7 +104,7 @@ public class Truck extends Vehicle{
                 if(p.getIdentification().isFakeId()){
                     // Passenger added to the naughty list
                     badPassengers.add(p);
-                    passengers.remove(p);
+                    // passengers.remove(p);
 
                     if(p.isDriver()){
                         numOfBadDrivers++;
@@ -120,29 +122,38 @@ public class Truck extends Vehicle{
             // Serialized data about every illegal passenger
             serializeBadPassengers();
 
-            // Only the info that the bus has been rejected from the border
+            // Only the info that the truck has been rejected from the border
             if(truckRejected)
                 createEvidentationTruck(POLICE_EVIDENTATION);
 
             // How many passengers are thrown out
-            createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers);
-    
+            if(numOfBadPassengers > 0){
+                createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers);
+            }
 
             // Change p3 back to "T"
             changeTerminal("p3");
-            notifyAll();
+            
+            synchronized(this){
+                try {
+                    notifyAll();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
 
         }
     
-        if(truckRejected)
+        if(truckRejected){
+            System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
             return;
-
+        }
 
         // Then they go to the border crossing
 
 
         checkTerminals();
-        if(c2 == "F"){
+        while(c2 == "F"){
             synchronized(this){
                 try {
                     wait();
@@ -151,10 +162,10 @@ public class Truck extends Vehicle{
                 }
             }
         }
-        else if(c2 == "T"){
+        if(c2 == "T"){
             // Change back to "F" -busy
             changeTerminal("c2");
-            notifyAll();                    // Notify nakon promjene u F ???
+            // notifyAll();                    // Notify nakon promjene u F ???
 
             try {
                 sleep(500);
@@ -173,9 +184,24 @@ public class Truck extends Vehicle{
 
             // Change c2 back to "T"
             changeTerminal("c2");
-            notifyAll();
+            
+            synchronized(this){
+                try {
+                    notifyAll();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+
+            if(truckRejected){
+                System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
+                return;
+            }
+            
 
         }
+
+        System.out.println("Vehicle [" + this + "] has passed the border!");
 
     }
 
@@ -190,7 +216,7 @@ public class Truck extends Vehicle{
         boolean append = (new File(FILE)).exists();
         try{
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
-            writer1.write("SVI;KAMION;" + this.id);
+            writer1.write("SVI;KAMION;" + this.id + "\n");
             writer1.close();
         }
         catch(Exception e){
@@ -204,7 +230,7 @@ public class Truck extends Vehicle{
         boolean append = (new File(FILE)).exists();
             try{
                 BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
-                writer1.write("PUTNIK;" + numOfBadPassengers + ";KAMION;" + this.id);
+                writer1.write("PUTNIK;" + numOfBadPassengers + ";KAMION;" + this.id + "\n");
                 writer1.close();
             }
             catch(Exception e){

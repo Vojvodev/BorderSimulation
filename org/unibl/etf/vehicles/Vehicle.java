@@ -21,18 +21,17 @@ public abstract class Vehicle extends Thread{
     protected static final String BORDER_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "CARINSKA_KONTROLA.txt";
     protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
 
+    protected volatile String p1, p2, p3, c1, c2;                    // To read terminal states
     protected static final Object stackLock = new Object();
-    protected static final Object p1Lock = new Object();
-    protected static final Object p2Lock = new Object();
-    protected static final Object p3Lock = new Object();
-    protected static final Object c1Lock = new Object();
-    protected static final Object c2Lock = new Object();
+    // protected static final Object p1Lock = new Object();
+    // protected static final Object p2Lock = new Object();
+    // protected static final Object p3Lock = new Object();
+    // protected static final Object c1Lock = new Object();
+    // protected static final Object c2Lock = new Object();
 
 
-    protected String p1, p2, p3, c1, c2;
 
     private static int counter = 0;
-
     protected HashSet<Passenger> passengers;
     protected HashSet<Passenger> badPassengers;
     protected int numOfPeople;
@@ -44,7 +43,7 @@ public abstract class Vehicle extends Thread{
 
         this.numOfPeople = rand.nextInt(1, capacity + 1);
         this.passengers = new HashSet<Passenger>();
-
+        this.badPassengers = new HashSet<Passenger>();
         this.id = counter++;
     }
 
@@ -103,6 +102,8 @@ public abstract class Vehicle extends Thread{
                     }
                 }
             }
+
+            reader.close();
         }
         catch(Exception e){
             System.out.println("Could not read from TERMINALS_FILE in checkTerminals!");
@@ -135,6 +136,8 @@ public abstract class Vehicle extends Thread{
 
                 text += (line + "\n");
             }
+
+            reader.close();
         }
         catch(Exception e){
             System.out.println("Could not read from TERMINALS_FILE in changeTerminal!");
@@ -155,15 +158,18 @@ public abstract class Vehicle extends Thread{
 
     // Serializes data about every illegal passenger
     protected synchronized void serializeBadPassengers(){
-        boolean append1 = (new File(SERIALIZATION_FILE)).exists();
-        try{
-            ObjectOutputStream stream1 = new ObjectOutputStream(new FileOutputStream(SERIALIZATION_FILE, append1));
-            stream1.writeObject(badPassengers);
-            stream1.close();
+        if(!badPassengers.isEmpty()){
+            boolean append1 = (new File(SERIALIZATION_FILE)).exists();
+            try{
+                ObjectOutputStream stream1 = new ObjectOutputStream(new FileOutputStream(SERIALIZATION_FILE, append1));
+                stream1.writeObject(badPassengers);
+                stream1.close();
+            }
+            catch(Exception e){
+                System.out.println(e);
+            }
         }
-        catch(Exception e){
-            System.out.println(e);
-        }
+        
     }
 
 }

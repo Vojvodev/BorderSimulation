@@ -4,10 +4,11 @@ package org.unibl.etf.identifications;
 import java.util.Random;
 
 import java.lang.Cloneable;
+import java.io.Serializable;
 import java.lang.CloneNotSupportedException;
 
 
-public class PassengerId implements Cloneable{
+public class PassengerId implements Cloneable, Serializable{
     private String name;
     private boolean fakeId;
 

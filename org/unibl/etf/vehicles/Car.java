@@ -5,10 +5,11 @@ import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
-
+import java.util.Iterator;
 
 
 public class Car extends Vehicle{
@@ -46,19 +47,17 @@ public class Car extends Vehicle{
         }
         
 
-        
-        checkTerminals();
-        if(p1 == "F" && p2 == "F"){
-            synchronized(this){
+        synchronized(this){
+            checkTerminals();
+            while(p1 == "F" && p2 == "F"){
                 try {
                     wait();
                 } catch (Exception e) {
                     System.out.println(e);
                 }
-            }
-            
+            }   
         }
-        else if(p1 == "T" || p2 == "T"){
+        if(p1 == "T" || p2 == "T"){
             // Change back to "F" -busy
             if(p1 == "T"){
                 changeTerminal("p1");
@@ -76,7 +75,9 @@ public class Car extends Vehicle{
 
             // Police terminal   
             int numOfBadPassengers = 0;
-            for(Passenger p : passengers){
+            Iterator<Passenger> iterator = passengers.iterator();
+            while(iterator.hasNext()){
+                Passenger p = iterator.next();
                 try {
                     sleep(500);
                 } catch (Exception e) {
@@ -96,7 +97,7 @@ public class Car extends Vehicle{
                           
                     }
                     
-                    passengers.remove(p);
+                    // passengers.remove(p);
                 }
             }  
             
@@ -108,7 +109,9 @@ public class Car extends Vehicle{
                 createPoliceEvidentationCar();
 
             // How many passengers are thrown out
-            createPoliceEvidentationPassengers(numOfBadPassengers);
+            if(numOfBadPassengers > 0){
+                createPoliceEvidentationPassengers(numOfBadPassengers);
+            }
         
 
             // Change back to "T" -free
@@ -118,13 +121,22 @@ public class Car extends Vehicle{
             else if(changed == 2){
                 changeTerminal("p2");
             }
-            notifyAll(); 
+
+            synchronized(this){
+                try {
+                    notifyAll();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
 
         }
         
-        if(carRejected)
+        if(carRejected){
+            System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
             return;
-
+        }
+            
         // Then they go to the border crossing
         
 
@@ -141,7 +153,7 @@ public class Car extends Vehicle{
         else if(c1 == "T"){
             // Change back to "F" -busy
             changeTerminal("c1");
-            notifyAll();                        // Notify when changed to F ???
+            // notifyAll();                        // Notify when changed to F ???
 
 
             // Border logic
@@ -155,9 +167,18 @@ public class Car extends Vehicle{
 
             // Change back to "T" -free
             changeTerminal("c1");
-            notifyAll();  
+
+            synchronized(this){
+                try {
+                    notifyAll();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }  
 
         }
+
+        System.out.println("Vehicle [" + this + "] has passed the border!");
 
     }
 
@@ -169,7 +190,7 @@ public class Car extends Vehicle{
         boolean append = (new File(POLICE_EVIDENTATION)).exists();
         try {
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
-            writer1.write("SVI;AUTOMOBIL;" + this.id);
+            writer1.write("SVI;AUTOMOBIL;" + this.id + "\n");
             writer1.close();
         } catch (Exception e) {
             System.out.println(e);
@@ -182,7 +203,7 @@ public class Car extends Vehicle{
         boolean append = (new File(POLICE_EVIDENTATION)).exists();
         try {
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
-            writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOMOBIL" + this.id);
+            writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOMOBIL;" + this.id + "\n");
             writer1.close();
         } catch (Exception e) {
             System.out.println(e);

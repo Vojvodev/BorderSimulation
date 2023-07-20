@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
-
+import java.util.Iterator;
 
 
 public class Bus extends Vehicle{
@@ -62,10 +62,9 @@ public class Bus extends Vehicle{
             }
         }
         
-
-        checkTerminals();
-        if(p1 == "F" && p2 == "F"){
-            synchronized(this){
+        synchronized(this){
+            checkTerminals();
+            while(p1 == "F" && p2 == "F"){
                 try {
                     wait();
                 } catch (Exception e) {
@@ -73,7 +72,7 @@ public class Bus extends Vehicle{
                 }
             }
         }
-        else if(p1 == "T" || p2 == "T"){
+        if(p1 == "T" || p2 == "T"){
             // Change back to "F" -busy
             if(p1 == "T"){
                 changeTerminal("p1");
@@ -93,7 +92,9 @@ public class Bus extends Vehicle{
             // Police terminal
             int numOfBadPassengers = 0;
 
-            for(Passenger p : passengers){
+            Iterator<Passenger> iterator = passengers.iterator();
+            while(iterator.hasNext()){
+                Passenger p = iterator.next();
                 try {
                     sleep(100);
                 } catch (Exception e) {
@@ -103,7 +104,7 @@ public class Bus extends Vehicle{
                 if(p.getIdentification().isFakeId()){
                     // Passenger added to the naughty list
                     badPassengers.add(p);
-                    passengers.remove(p);
+                    // passengers.remove(p);
 
                     if(p.isDriver()){
                         numOfBadDrivers++;
@@ -129,8 +130,9 @@ public class Bus extends Vehicle{
                 createEvidentationBus(POLICE_EVIDENTATION);
 
             // How many passengers are thrown out
-            createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers, numOfBadDrivers);
-
+            if(numOfBadPassengers > 0){
+                createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers, numOfBadDrivers);
+            }
 
 
             // Change back to "T" -free
@@ -140,20 +142,28 @@ public class Bus extends Vehicle{
             else if(changed == 2){
                 changeTerminal("p2");
             }
-            notifyAll();
+
+            synchronized(this){
+                try {
+                    notifyAll();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
 
         }
         
 
-        if(busRejected)
+        if(busRejected){
+            System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
             return;
-
+        }
 
         // Then they go to the border crossing
 
 
         checkTerminals();
-        if(c1 == "F"){
+        while(c1 == "F"){
             synchronized(this){
                 try {
                     wait();
@@ -162,16 +172,18 @@ public class Bus extends Vehicle{
                 }
             }
         }
-        else if(c1 == "T"){
+        if(c1 == "T"){
             // Change back to "F" -busy
             changeTerminal("c1");
-            notifyAll();                            // Notify when changing to F ???
+            // notifyAll();                            // Notify when changing to F ???
 
 
             // Border logic
             int numOfBadPassengers = 0;
 
-            for(Passenger p : passengers){
+            Iterator<Passenger> iterator = passengers.iterator();
+            while(iterator.hasNext()){
+                Passenger p = iterator.next();
                 try {
                     sleep(100);
                 } catch (Exception e) {
@@ -179,7 +191,7 @@ public class Bus extends Vehicle{
                 }
 
                 if(p.hasForbiddenLuggage()){
-                    passengers.remove(p);
+                    // passengers.remove(p);
 
                     if(p.isDriver()){
                         numOfBadDrivers++;
@@ -198,19 +210,32 @@ public class Bus extends Vehicle{
             }
 
             // Only the info that the bus has been rejected from the border
-            if(busRejected)
+            if(busRejected){
                 createEvidentationBus(BORDER_EVIDENTATION);
+                System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
+            }
+                
 
             // How many passengers are thrown out
-            createEvidentationPassengers(BORDER_EVIDENTATION, numOfBadPassengers, numOfBadDrivers);
-
+            if(numOfBadPassengers > 0 || numOfBadDrivers > 0){
+                createEvidentationPassengers(BORDER_EVIDENTATION, numOfBadPassengers, numOfBadDrivers);
+            }
 
             // Change back to "T" -free
             changeTerminal("c1");
-            notifyAll();
+
+            synchronized(this){
+                try {
+                    notifyAll();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
 
         }
     
+        System.out.println("Vehicle [" + this + "] has passed the border!");
+
     }
 
 
@@ -219,7 +244,7 @@ public class Bus extends Vehicle{
         boolean append = (new File(FILE)).exists();
         try{
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
-            writer1.write("SVI;AUTOBUS;" + this.id);
+            writer1.write("SVI;AUTOBUS;" + this.id + "\n");
             writer1.close();
         }
         catch(Exception e){
@@ -233,7 +258,7 @@ public class Bus extends Vehicle{
         boolean append = (new File(FILE)).exists();
         try{
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(FILE, append));
-            writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOBUS;" + this.id + ";" + numOfBadDrivers);
+            writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOBUS;" + this.id + ";" + numOfBadDrivers + "\n");
             writer1.close();
         }
         catch(Exception e){
@@ -246,4 +271,5 @@ public class Bus extends Vehicle{
     public String toString(){
         return "Bus " + "(id: " + id + ") with " + numOfPeople + " passengers.";
     }
+
 }

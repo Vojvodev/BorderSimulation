@@ -5,10 +5,11 @@ import org.unibl.etf.identifications.PassengerId;
 
 import java.util.Random;
 import java.lang.Cloneable;
+import java.io.Serializable;
 import java.lang.CloneNotSupportedException;
 
 
-public class Passenger implements Cloneable{
+public class Passenger implements Cloneable, Serializable{
     private PassengerId identification;
     private boolean luggage;
     private boolean forbiddenLuggage;
