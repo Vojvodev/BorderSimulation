@@ -17,6 +17,8 @@ public class Truck extends Vehicle{
     private int realLoad;
     private boolean documentationNeeded;
     
+    private boolean truckRejected = false;
+
 
     public Truck(){
         super(CAPACITY);
@@ -54,8 +56,6 @@ public class Truck extends Vehicle{
 
     @Override
     public void run(){
-        boolean truckRejected = false;
-
         synchronized(stackLock){
             while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
                 try {
@@ -67,144 +67,158 @@ public class Truck extends Vehicle{
         }
 
 
-        synchronized(this){
-            checkTerminals();
-            while(p3 == "F"){
+        checkTerminals();
+        synchronized(queueLock){
+            while("F".equals(p3)){
                 try {
-                    wait();
+                    queueLock.wait();
                 } catch (Exception e) {
                     System.out.println(e);
                 }
             }
         }
-        if(p3 == "T"){
-            // Change back to "F" -busy
-            changeTerminal("p3");
+
+        if("T".equals(p3)){
+            synchronized(p3Lock){
+                // Change back to "F" -busy
+                changeTerminal("p3");
 
 
-            synchronized(stackLock){
-                BorderSimulation.vehicleStack.pop();
-                stackLock.notifyAll();        // Condition changed, now someone else is the first in line
-            }
-            
-            // Police terminal
-            
-            int numOfBadDrivers = 0;
-            int numOfBadPassengers = 0;
-    
-            Iterator<Passenger> iterator = passengers.iterator();
-            while(iterator.hasNext()){
-                Passenger p = iterator.next();
-                try {
-                    sleep(500);
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
+                policeCrossingLogic();
 
-                if(p.getIdentification().isFakeId()){
-                    // Passenger added to the naughty list
-                    badPassengers.add(p);
-                    // passengers.remove(p);
 
-                    if(p.isDriver()){
-                        numOfBadDrivers++;
+                // Change p3 back to "T"
+                changeTerminal("p3");
+                synchronized(queueLock){
+                    try {
+                        queueLock.notifyAll();
+                    } catch (Exception e) {
+                        System.out.println(e);
                     }
-    
-                    if(numOfBadDrivers == 3){
-                        // Noted that the truck has been rejected
-                        truckRejected = true;
-                    }
-
-                }
-
-            }
-
-            // Serialized data about every illegal passenger
-            serializeBadPassengers();
-
-            // Only the info that the truck has been rejected from the border
-            if(truckRejected)
-                createEvidentationTruck(POLICE_EVIDENTATION);
-
-            // How many passengers are thrown out
-            if(numOfBadPassengers > 0){
-                createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers);
-            }
-
-            // Change p3 back to "T"
-            changeTerminal("p3");
-            
-            synchronized(this){
-                try {
-                    notifyAll();
-                } catch (Exception e) {
-                    System.out.println(e);
                 }
             }
-
         }
     
+
         if(truckRejected){
             System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
             return;
         }
 
+
         // Then they go to the border crossing
 
 
         checkTerminals();
-        while(c2 == "F"){
-            synchronized(this){
+        synchronized(queueLock){
+            while("F".equals(c2)){
                 try {
-                    wait();
+                    queueLock.wait();
                 } catch (Exception e) {
                     System.out.println(e);
                 }
             }
         }
-        if(c2 == "T"){
-            // Change back to "F" -busy
-            changeTerminal("c2");
-            // notifyAll();                    // Notify nakon promjene u F ???
 
+        if("T".equals(c2)){
+            synchronized(c2Lock){
+                // Change back to "F" -busy
+                changeTerminal("c2");
+            
+
+                borderCrossingLogic();
+            
+
+                // Change c2 back to "T"
+                changeTerminal("c2");
+                synchronized(queueLock){
+                    try {
+                        queueLock.notifyAll();
+                    } catch (Exception e) {
+                        System.out.println(e);
+                    }
+                }
+
+                if(truckRejected){
+                    System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
+                    return;
+                }
+            }
+        }
+
+        System.out.println("Vehicle [" + this + "] has passed the border!");
+        
+    }
+
+
+    // What every truck does on the police crossing
+    private void policeCrossingLogic(){
+        synchronized(stackLock){
+            BorderSimulation.vehicleStack.pop();
+            stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+        }
+        
+            // Police terminal
+        
+        int numOfBadDrivers = 0;
+        int numOfBadPassengers = 0;
+
+        Iterator<Passenger> iterator = passengers.iterator();
+        while(iterator.hasNext()){
+            Passenger p = iterator.next();
             try {
                 sleep(500);
             } catch (Exception e) {
                 System.out.println(e);
             }
 
-            if(this.isDocumentationNeeded()){
-                if(realLoad > loadCapacity){
+            if(p.getIdentification().isFakeId()){
+                // Passenger added to the naughty list
+                badPassengers.add(p);
+                // passengers.remove(p);
+
+                if(p.isDriver()){
+                    numOfBadDrivers++;
+                }
+
+                if(numOfBadDrivers == 3){
                     // Noted that the truck has been rejected
                     truckRejected = true;
-                    createEvidentationTruck(BORDER_EVIDENTATION);
-                }    
-            }
-            
-
-            // Change c2 back to "T"
-            changeTerminal("c2");
-            
-            synchronized(this){
-                try {
-                    notifyAll();
-                } catch (Exception e) {
-                    System.out.println(e);
                 }
-            }
 
-            if(truckRejected){
-                System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
-                return;
             }
-            
 
         }
 
-        System.out.println("Vehicle [" + this + "] has passed the border!");
+        // Serialized data about every illegal passenger
+        serializeBadPassengers();
 
+        // Only the info that the truck has been rejected from the border
+        if(truckRejected)
+            createEvidentationTruck(POLICE_EVIDENTATION);
+
+        // How many passengers are thrown out
+        if(numOfBadPassengers > 0){
+            createEvidentationPassengers(POLICE_EVIDENTATION, numOfBadPassengers);
+        }
     }
 
+
+    private void borderCrossingLogic(){
+        try {
+            sleep(500);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        if(this.isDocumentationNeeded()){
+            if(realLoad > loadCapacity){
+                // Noted that the truck has been rejected
+                truckRejected = true;
+                createEvidentationTruck(BORDER_EVIDENTATION);
+            }    
+        }
+    }
 
 
     public boolean isDocumentationNeeded(){

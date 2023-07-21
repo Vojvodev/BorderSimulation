@@ -21,13 +21,14 @@ public abstract class Vehicle extends Thread{
     protected static final String BORDER_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "CARINSKA_KONTROLA.txt";
     protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
 
-    protected volatile String p1, p2, p3, c1, c2;                    // To read terminal states
+    protected static volatile String p1, p2, p3, c1, c2;                    // To read terminal states
     protected static final Object stackLock = new Object();
-    // protected static final Object p1Lock = new Object();
-    // protected static final Object p2Lock = new Object();
-    // protected static final Object p3Lock = new Object();
-    // protected static final Object c1Lock = new Object();
-    // protected static final Object c2Lock = new Object();
+    protected static final Object queueLock = new Object();
+    protected static final Object p1Lock = new Object();
+    protected static final Object p2Lock = new Object();
+    protected static final Object p3Lock = new Object();
+    protected static final Object c1Lock = new Object();
+    protected static final Object c2Lock = new Object();
 
 
 
@@ -107,8 +108,7 @@ public abstract class Vehicle extends Thread{
         }
         catch(Exception e){
             System.out.println("Could not read from TERMINALS_FILE in checkTerminals!");
-        }
-        
+        }  
     }
 
 
@@ -142,7 +142,7 @@ public abstract class Vehicle extends Thread{
         catch(Exception e){
             System.out.println("Could not read from TERMINALS_FILE in changeTerminal!");
         }
-        
+
         
         try{
             BufferedWriter writer = new BufferedWriter(new FileWriter(TERMINALS_FILE));
@@ -153,6 +153,8 @@ public abstract class Vehicle extends Thread{
             System.out.println("Could not write to TERMINALS_FILE in changeTerminal!");
         }
         
+
+        checkTerminals();
     }
 
 

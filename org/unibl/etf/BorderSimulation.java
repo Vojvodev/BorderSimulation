@@ -17,8 +17,8 @@ import java.util.Stack;
 public class BorderSimulation{
     protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
 
-    public static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();
-    public static Stack<Vehicle> vehicleStack = new Stack<Vehicle>();
+    public static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();       // Doesn't change after the threads start
+    public static Stack<Vehicle> vehicleStack = new Stack<Vehicle>();               // Does change
 
 
     public static void main(String args[]){
@@ -32,18 +32,24 @@ public class BorderSimulation{
             vehicleStack.push(v);
         }
 
+
+        for(Vehicle v : vehicleArray){
+            System.out.println(v);
+        }
+
+
         setTerminalsToTrue();
 
         // Simulation start
-        System.out.println("---Simulation started---\n");
-        for(Vehicle v : vehicleStack){
+        System.out.println("\n---Simulation started---\n");
+        for(Vehicle v : vehicleArray){
             v.start();
         }
 
 
         try{
-            for(Vehicle v : vehicleStack){
-            v.join();
+            for(Vehicle v : vehicleArray){
+                v.join();
             }
         }
         catch(InterruptedException e){
@@ -52,7 +58,6 @@ public class BorderSimulation{
         
         
         System.out.println("---Simulation ended---\n");
-
 
     }
 
@@ -89,4 +94,5 @@ public class BorderSimulation{
 
         return true;
     }
+
 }
