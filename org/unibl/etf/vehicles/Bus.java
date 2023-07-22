@@ -1,5 +1,6 @@
 package org.unibl.etf.vehicles;
 
+
 import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.passengers.Passenger;
 
@@ -8,6 +9,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.util.Iterator;
+import java.util.EmptyStackException;
+import java.util.logging.*;
 
 
 public class Bus extends Vehicle{
@@ -15,6 +18,7 @@ public class Bus extends Vehicle{
 
     private int numOfBadDrivers = 0;
     private boolean busRejected = false;
+
 
     public Bus(){
         super(CAPACITY);
@@ -43,7 +47,6 @@ public class Bus extends Vehicle{
                 this.passengers.add(px);
             }
         }
-
     }
 
 
@@ -53,8 +56,13 @@ public class Bus extends Vehicle{
             while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
                 try {
                     stackLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (EmptyStackException e){
+                    System.out.println("Error!");
+                    BorderSimulation.BUSLOGGER.log(Level.SEVERE, "The vehicleStack is empty!", e);
+                }
+                catch(Exception e1){
+                    System.out.println("Error!");
+                    BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with wait()!", e1);
                 }
             }
         }
@@ -65,8 +73,9 @@ public class Bus extends Vehicle{
             while("F".equals(p1) && "F".equals(p2)){
                 try {
                     queueLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (Exception e){
+                    System.out.println("Error!");
+                    BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with wait()!", e);
                 }
             }
         }  
@@ -85,8 +94,9 @@ public class Bus extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
             }
@@ -105,8 +115,9 @@ public class Bus extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
             }
@@ -127,8 +138,9 @@ public class Bus extends Vehicle{
             while("F".equals(c1)){
                 try {
                     queueLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (Exception e){
+                    System.out.println("Error!");
+                    BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with wait()!", e);
                 }
             }
         }
@@ -147,8 +159,9 @@ public class Bus extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
 
@@ -170,7 +183,13 @@ public class Bus extends Vehicle{
     private void policeCrossingLogic(){
         synchronized(stackLock){
             BorderSimulation.vehicleStack.pop();
-            stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            try{
+                stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            }
+            catch(Exception e){
+                System.out.println("Error!");
+                BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
+            }
         }
 
 
@@ -182,14 +201,15 @@ public class Bus extends Vehicle{
             Passenger p = iterator.next();
             try {
                 sleep(100);
-            } catch (Exception e) {
-                System.out.println(e);
+            } catch (Exception e){
+                System.out.println("Error!");
+                BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with sleep()!", e);
             }
 
             if(p.getIdentification().isFakeId()){
                 // Passenger added to the naughty list
                 badPassengers.add(p);
-                // passengers.remove(p);
+                
 
                 if(p.isDriver()){
                     numOfBadDrivers++;
@@ -231,13 +251,12 @@ public class Bus extends Vehicle{
             Passenger p = iterator.next();
             try {
                 sleep(100);
-            } catch (Exception e) {
-                System.out.println(e);
+            } catch (Exception e){
+                System.out.println("Error!");
+                BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with sleep()!", e);
             }
 
             if(p.hasForbiddenLuggage()){
-                // passengers.remove(p);
-
                 if(p.isDriver()){
                     numOfBadDrivers++;
                 }
@@ -272,7 +291,8 @@ public class Bus extends Vehicle{
             writer1.close();
         }
         catch(Exception e){
-            System.out.println(e);
+            System.out.println("Error!");
+            BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Could not write to FILE!", e);
         }
     }
 
@@ -286,7 +306,8 @@ public class Bus extends Vehicle{
             writer1.close();
         }
         catch(Exception e){
-            System.out.println(e);
+            System.out.println("Error!");
+            BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Could not write to FILE!", e);
         }
     }
 

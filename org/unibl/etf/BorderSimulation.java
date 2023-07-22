@@ -5,6 +5,7 @@ import org.unibl.etf.identifications.*;
 import org.unibl.etf.passengers.*;
 import org.unibl.etf.vehicles.*;
 
+import java.util.Date;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
@@ -12,16 +13,32 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.lang.InterruptedException;
+import java.util.logging.*;
 
 
 public class BorderSimulation{
     protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
+    protected static final String MAIN_LOG_FILE       = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "mainLogs.log";
+    protected static final String VEHICLE_LOG_FILE    = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "vehicleLogs.log";
+    protected static final String CAR_LOG_FILE        = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "carLogs.log";
+    protected static final String BUS_LOG_FILE        = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "busLogs.log";
+    protected static final String TRUCK_LOG_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "truckLogs.log";
 
     public static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();       // Doesn't change after the threads start
     public static Stack<Vehicle> vehicleStack = new Stack<Vehicle>();               // Does change
+    
+    private static final Logger MAINLOGGER   = Logger.getLogger(BorderSimulation.class.getName());
+    public static final Logger VEHICLELOGGER = Logger.getLogger(Vehicle.class.getName());
+    public static final Logger CARLOGGER     = Logger.getLogger(Car.class.getName());
+    public static final Logger BUSLOGGER     = Logger.getLogger(Bus.class.getName());
+    public static final Logger TRUCKLOGGER   = Logger.getLogger(Truck.class.getName());
 
 
     public static void main(String args[]){
+        // Configuring loggers
+        configureLogger();
+
 
         // Filling up the array with Vehicles
         if(createArray() == false){
@@ -40,8 +57,10 @@ public class BorderSimulation{
 
         setTerminalsToTrue();
 
+
         // Simulation start
         System.out.println("\n---Simulation started---\n");
+
         for(Vehicle v : vehicleArray){
             v.start();
         }
@@ -53,11 +72,12 @@ public class BorderSimulation{
             }
         }
         catch(InterruptedException e){
-            System.out.println(e);
+            System.out.println("Error!");
+            MAINLOGGER.log(Level.SEVERE, "Main could not wait for threads to join!", e);
         }
         
         
-        System.out.println("---Simulation ended---\n");
+        System.out.println("\n---Simulation ended---\n");
 
     }
 
@@ -71,7 +91,8 @@ public class BorderSimulation{
             writer.close();
         }
         catch(Exception e){
-            System.out.println("Could not write to TERMINALS_FILE in setTerminalsToTrue!");
+            System.out.println("Error!");
+            MAINLOGGER.log(Level.SEVERE, "Could not write to TERMINALS_FILE in setTerminalsToTrue!", e);
         }
     }
 
@@ -93,6 +114,40 @@ public class BorderSimulation{
         Collections.shuffle(vehicleArray);
 
         return true;
+    }
+
+
+    private static void configureLogger(){
+        try{
+            Handler mainHandler    = new FileHandler(MAIN_LOG_FILE);
+            Handler vehicleHandler = new FileHandler(VEHICLE_LOG_FILE);
+            Handler carHandler     = new FileHandler(CAR_LOG_FILE);
+            Handler busHandler     = new FileHandler(BUS_LOG_FILE);
+            Handler truckHandler   = new FileHandler(TRUCK_LOG_FILE);
+            
+            mainHandler.setFormatter(new SimpleFormatter());
+            vehicleHandler.setFormatter(new SimpleFormatter());
+            carHandler.setFormatter(new SimpleFormatter());
+            busHandler.setFormatter(new SimpleFormatter());
+            truckHandler.setFormatter(new SimpleFormatter());
+
+            MAINLOGGER.addHandler(mainHandler);
+            VEHICLELOGGER.addHandler(vehicleHandler);
+            CARLOGGER.addHandler(carHandler);
+            BUSLOGGER.addHandler(busHandler);
+            TRUCKLOGGER.addHandler(truckHandler);
+
+            MAINLOGGER.setLevel(Level.ALL);
+            VEHICLELOGGER.setLevel(Level.ALL);
+            CARLOGGER.setLevel(Level.ALL);
+            BUSLOGGER.setLevel(Level.ALL);
+            TRUCKLOGGER.setLevel(Level.ALL);
+            
+        }
+        catch(Exception e){
+            System.out.println("Error!");
+            MAINLOGGER.log(Level.SEVERE, "Exception during the creation of logger!", e);
+        }
     }
 
 }

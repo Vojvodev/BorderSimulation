@@ -1,6 +1,7 @@
 package org.unibl.etf.vehicles;
 
 
+import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.Random;
@@ -13,6 +14,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.NullPointerException;
+import java.util.logging.*;
 
 
 public abstract class Vehicle extends Thread{
@@ -20,7 +25,7 @@ public abstract class Vehicle extends Thread{
     protected static final String POLICE_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "POLICIJSKA_KONTROLA.txt";
     protected static final String BORDER_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "CARINSKA_KONTROLA.txt";
     protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
-
+ 
     protected static volatile String p1, p2, p3, c1, c2;                    // To read terminal states
     protected static final Object stackLock = new Object();
     protected static final Object queueLock = new Object();
@@ -29,8 +34,6 @@ public abstract class Vehicle extends Thread{
     protected static final Object p3Lock = new Object();
     protected static final Object c1Lock = new Object();
     protected static final Object c2Lock = new Object();
-
-
 
     private static int counter = 0;
     protected HashSet<Passenger> passengers;
@@ -106,9 +109,14 @@ public abstract class Vehicle extends Thread{
 
             reader.close();
         }
-        catch(Exception e){
-            System.out.println("Could not read from TERMINALS_FILE in checkTerminals!");
-        }  
+        catch(FileNotFoundException e){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not read from TERMINALS_FILE!", e);
+        } 
+        catch(IOException e1){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not read using a reader!", e1);
+        } 
     }
 
 
@@ -139,8 +147,13 @@ public abstract class Vehicle extends Thread{
 
             reader.close();
         }
-        catch(Exception e){
-            System.out.println("Could not read from TERMINALS_FILE in changeTerminal!");
+        catch(FileNotFoundException e){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not read from TERMINALS_FILE!", e);
+        }
+        catch(IOException e1){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not read using a reader!", e1);
         }
 
         
@@ -149,10 +162,14 @@ public abstract class Vehicle extends Thread{
             writer.write(text);
             writer.close();
         }
-        catch(Exception e){
-            System.out.println("Could not write to TERMINALS_FILE in changeTerminal!");
+        catch(FileNotFoundException e){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not write to TERMINALS_FILE!", e);
         }
-        
+        catch(IOException e1){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not write using a writer!", e1);
+        }
 
         checkTerminals();
     }
@@ -167,8 +184,17 @@ public abstract class Vehicle extends Thread{
                 stream1.writeObject(badPassengers);
                 stream1.close();
             }
-            catch(Exception e){
-                System.out.println(e);
+            catch(FileNotFoundException e){
+                System.out.println("Error!");
+                BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not serialize to SERIALIZATION_FILE!", e);
+            }
+            catch(NullPointerException e1){
+                System.out.println("Error!");
+                BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "SERIALIZATION_FILE argument is null!", e1);
+            }
+            catch(Exception e2){
+                System.out.println("Error!");
+                BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Something wrong with I/O!", e2);
             }
         }
         

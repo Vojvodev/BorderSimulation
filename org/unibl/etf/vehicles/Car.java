@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.util.Iterator;
+import java.util.EmptyStackException;
+import java.util.logging.*;
 
 
 public class Car extends Vehicle{
@@ -38,8 +40,13 @@ public class Car extends Vehicle{
             while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
                 try {
                     stackLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (EmptyStackException e){
+                    System.out.println("Error!");
+                    BorderSimulation.CARLOGGER.log(Level.SEVERE, "The vehicleStack is empty!", e);
+                }
+                catch(Exception e1){
+                    System.out.println("Error!");
+                    BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with wait()!", e1);
                 }
             }
         }
@@ -50,8 +57,9 @@ public class Car extends Vehicle{
             while("F".equals(p1) && "F".equals(p2)){
                 try {
                     queueLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (Exception e){
+                    System.out.println("Error!");
+                    BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with wait()!", e);
                 }
             }   
         }
@@ -70,8 +78,9 @@ public class Car extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
             }
@@ -90,8 +99,9 @@ public class Car extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
             }
@@ -112,8 +122,9 @@ public class Car extends Vehicle{
             while("F".equals(c1)){
                 try {
                     queueLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (Exception e){
+                    System.out.println("Error!");
+                    BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with wait()!", e);
                 }
             }
         }
@@ -131,8 +142,9 @@ public class Car extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
             }   
@@ -148,7 +160,13 @@ public class Car extends Vehicle{
     private void policeCrossingLogic(){
         synchronized(stackLock){
             BorderSimulation.vehicleStack.pop();
-            stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            try {
+                stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            } catch (Exception e){
+                System.out.println("Error!");
+                BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
+            }
+            
         }
 
         // Police terminal   
@@ -158,8 +176,9 @@ public class Car extends Vehicle{
            Passenger p = iterator.next();
             try {
                 sleep(500);
-            } catch (Exception e) {
-                System.out.println(e);
+            } catch (Exception e){
+                System.out.println("Error!");
+                BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with sleep()!", e);
             }
 
             if(p.getIdentification().isFakeId()){
@@ -172,10 +191,7 @@ public class Car extends Vehicle{
                 if(p.isDriver()){                       
                     // Noted that the car has been rejected
                     carRejected = true;
-                  
                 }
-
-            // passengers.remove(p);
             }
         }  
     
@@ -199,7 +215,8 @@ public class Car extends Vehicle{
             sleep(2000);
         }
         catch(Exception e){
-            System.out.println(e);
+            System.out.println("Error!");
+            BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with sleep()!", e);
         }
     }
 
@@ -211,8 +228,9 @@ public class Car extends Vehicle{
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
             writer1.write("SVI;AUTOMOBIL;" + this.id + "\n");
             writer1.close();
-        } catch (Exception e) {
-            System.out.println(e);
+        } catch (Exception e){
+            System.out.println("Error!");
+            BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not write to POLICE_EVIDENTATION!", e);
         } 
     }
 
@@ -224,8 +242,9 @@ public class Car extends Vehicle{
             BufferedWriter writer1 = new BufferedWriter(new FileWriter(POLICE_EVIDENTATION, append));
             writer1.write("PUTNIK;" + numOfBadPassengers + ";AUTOMOBIL;" + this.id + "\n");
             writer1.close();
-        } catch (Exception e) {
-            System.out.println(e);
+        } catch (Exception e){
+            System.out.println("Error!");
+            BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not write to POLICE_EVIDENTATION!", e);
         }
     }
 

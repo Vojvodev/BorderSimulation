@@ -1,5 +1,6 @@
 package org.unibl.etf.vehicles;
 
+
 import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.passengers.Passenger;
 
@@ -9,6 +10,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.util.Iterator;
+import java.util.EmptyStackException;
+import java.util.logging.*;
 
 
 public class Truck extends Vehicle{
@@ -60,8 +63,13 @@ public class Truck extends Vehicle{
             while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
                 try {
                     stackLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (EmptyStackException e){
+                    System.out.println("Error!");
+                    BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "The vehicleStack is empty!", e);
+                }
+                catch(Exception e1){
+                    System.out.println("Error!");
+                    BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with wait()!", e1);
                 }
             }
         }
@@ -72,8 +80,9 @@ public class Truck extends Vehicle{
             while("F".equals(p3)){
                 try {
                     queueLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (Exception e){
+                    System.out.println("Error!");
+                    BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with wait()!", e);
                 }
             }
         }
@@ -92,8 +101,9 @@ public class Truck extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
             }
@@ -114,8 +124,9 @@ public class Truck extends Vehicle{
             while("F".equals(c2)){
                 try {
                     queueLock.wait();
-                } catch (Exception e) {
-                    System.out.println(e);
+                } catch (Exception e){
+                    System.out.println("Error!");
+                    BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with wait()!", e);
                 }
             }
         }
@@ -134,8 +145,9 @@ public class Truck extends Vehicle{
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
-                    } catch (Exception e) {
-                        System.out.println(e);
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
                     }
                 }
 
@@ -155,10 +167,15 @@ public class Truck extends Vehicle{
     private void policeCrossingLogic(){
         synchronized(stackLock){
             BorderSimulation.vehicleStack.pop();
-            stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            try {
+                stackLock.notifyAll();        // Condition changed, now someone else is the first in line
+            } catch (Exception e){
+                System.out.println("Error!");
+                BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
+            }
+            
         }
         
-            // Police terminal
         
         int numOfBadDrivers = 0;
         int numOfBadPassengers = 0;
@@ -168,14 +185,14 @@ public class Truck extends Vehicle{
             Passenger p = iterator.next();
             try {
                 sleep(500);
-            } catch (Exception e) {
-                System.out.println(e);
+            } catch (Exception e){
+                System.out.println("Error!");
+                BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with sleep()!", e);
             }
 
             if(p.getIdentification().isFakeId()){
                 // Passenger added to the naughty list
                 badPassengers.add(p);
-                // passengers.remove(p);
 
                 if(p.isDriver()){
                     numOfBadDrivers++;
@@ -185,9 +202,7 @@ public class Truck extends Vehicle{
                     // Noted that the truck has been rejected
                     truckRejected = true;
                 }
-
             }
-
         }
 
         // Serialized data about every illegal passenger
@@ -207,8 +222,9 @@ public class Truck extends Vehicle{
     private void borderCrossingLogic(){
         try {
             sleep(500);
-        } catch (Exception e) {
-            System.out.println(e);
+        } catch (Exception e){
+            System.out.println("Error!");
+            BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with sleep()!", e);
         }
 
         if(this.isDocumentationNeeded()){
@@ -225,6 +241,7 @@ public class Truck extends Vehicle{
         return documentationNeeded;
     }
 
+
     // Notes that the bus has been rejected
     synchronized private void createEvidentationTruck(String FILE){
         boolean append = (new File(FILE)).exists();
@@ -234,7 +251,8 @@ public class Truck extends Vehicle{
             writer1.close();
         }
         catch(Exception e){
-            System.out.println(e);
+            System.out.println("Error!");
+            BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Could not write to FILE!", e);
         }
     }
 
@@ -248,7 +266,8 @@ public class Truck extends Vehicle{
                 writer1.close();
             }
             catch(Exception e){
-                System.out.println(e);
+                System.out.println("Error!");
+                BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Could not write to FILE!", e);
             }
     }
 
