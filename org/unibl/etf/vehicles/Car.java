@@ -173,7 +173,20 @@ public class Car extends Vehicle{
         int numOfBadPassengers = 0;
         Iterator<Passenger> iterator = passengers.iterator();
         while(iterator.hasNext()){
-           Passenger p = iterator.next();
+
+            if(BorderSimulation.pause){
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (Exception e) {
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not wait during pause!", e);
+                    }
+                }
+            }
+
+
+            Passenger p = iterator.next();
             try {
                 sleep(500);
             } catch (Exception e){
@@ -211,6 +224,18 @@ public class Car extends Vehicle{
 
     // What every car does on the border customs
     private void borderCrossingLogic(){
+        
+        if(BorderSimulation.pause){
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (Exception e) {
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not wait during pause!", e);
+                    }
+                }
+        }
+
         try{
             sleep(2000);
         }

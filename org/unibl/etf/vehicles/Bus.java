@@ -198,6 +198,19 @@ public class Bus extends Vehicle{
 
         Iterator<Passenger> iterator = passengers.iterator();
         while(iterator.hasNext()){
+
+            if(BorderSimulation.pause){
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (Exception e) {
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not wait during pause!", e);
+                    }
+                }
+            }
+
+            
             Passenger p = iterator.next();
             try {
                 sleep(100);
@@ -248,6 +261,19 @@ public class Bus extends Vehicle{
 
         Iterator<Passenger> iterator = passengers.iterator();
         while(iterator.hasNext()){
+
+            if(BorderSimulation.pause){
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (Exception e) {
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not wait during pause!", e);
+                    }
+                }
+            }
+
+
             Passenger p = iterator.next();
             try {
                 sleep(100);

@@ -3,8 +3,10 @@ package org.unibl.etf;
 
 import org.unibl.etf.identifications.*;
 import org.unibl.etf.passengers.*;
+import org.unibl.etf.stopwatch.Stopwatch;
 import org.unibl.etf.vehicles.*;
 
+import java.util.Scanner;
 import java.util.Date;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -34,8 +36,14 @@ public class BorderSimulation{
     public static final Logger BUSLOGGER     = Logger.getLogger(Bus.class.getName());
     public static final Logger TRUCKLOGGER   = Logger.getLogger(Truck.class.getName());
 
+    public static boolean pause = false;
+
 
     public static void main(String args[]){
+        Stopwatch timer = new Stopwatch();
+        Scanner scan = new Scanner(System.in);
+        String option = "";
+        
         // Configuring loggers
         configureLogger();
 
@@ -64,6 +72,21 @@ public class BorderSimulation{
         for(Vehicle v : vehicleArray){
             v.start();
         }
+        timer.setDaemon(true);
+        timer.start();
+        
+
+        //while (!"END".equals(option)) {                           // TODO: Instead of while() I need something to check if PAUSE button is pressed
+        //    option = scan.nextLine();
+        //    if ("PAUSE".equals(option)) {
+        //        pause = true;
+        //    }
+        //    if ("CONTINUE".equals(option)) {
+        //        pause = false;
+        //        resumeSimulation();
+        //    }
+        //}
+        //scan.close();
 
 
         try{
@@ -79,6 +102,20 @@ public class BorderSimulation{
         
         System.out.println("\n---Simulation ended---\n");
 
+    }
+
+
+    private static void resumeSimulation(){
+        for(Vehicle v : vehicleArray){
+            synchronized(v){
+                try {
+                    v.notifyAll();
+                } catch (Exception e){
+                    System.out.println("Error!");
+                    BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
+                }
+            }
+        }
     }
 
 

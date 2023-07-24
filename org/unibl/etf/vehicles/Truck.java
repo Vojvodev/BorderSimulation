@@ -182,6 +182,19 @@ public class Truck extends Vehicle{
 
         Iterator<Passenger> iterator = passengers.iterator();
         while(iterator.hasNext()){
+
+            if(BorderSimulation.pause){
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (Exception e) {
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not wait during pause!", e);
+                    }
+                }
+            }
+            
+
             Passenger p = iterator.next();
             try {
                 sleep(500);
@@ -220,6 +233,18 @@ public class Truck extends Vehicle{
 
 
     private void borderCrossingLogic(){
+
+        if(BorderSimulation.pause){
+            synchronized (this) {
+                try {
+                    wait();
+                } catch (Exception e) {
+                    System.out.println("Error!");
+                    BorderSimulation.CARLOGGER.log(Level.SEVERE, "Could not wait during pause!", e);
+                }
+            }
+        }
+
         try {
             sleep(500);
         } catch (Exception e){
@@ -234,11 +259,6 @@ public class Truck extends Vehicle{
                 createEvidentationTruck(BORDER_EVIDENTATION);
             }    
         }
-    }
-
-
-    public boolean isDocumentationNeeded(){
-        return documentationNeeded;
     }
 
 
@@ -269,6 +289,11 @@ public class Truck extends Vehicle{
                 System.out.println("Error!");
                 BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Could not write to FILE!", e);
             }
+    }
+    
+    
+    public boolean isDocumentationNeeded(){
+        return documentationNeeded;
     }
 
 
