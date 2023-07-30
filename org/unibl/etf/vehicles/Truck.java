@@ -2,6 +2,7 @@ package org.unibl.etf.vehicles;
 
 
 import org.unibl.etf.BorderSimulation;
+import org.unibl.etf.GUI.Frame1;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.Random;
@@ -96,22 +97,15 @@ public class Truck extends Vehicle{
                 policeCrossingLogic();
 
 
-                // Change p3 back to "T"
-                changeTerminal("p3");
-                synchronized(queueLock){
-                    try {
-                        queueLock.notifyAll();
-                    } catch (Exception e){
-                        System.out.println("Error!");
-                        BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
-                    }
-                }
+                // Change back to "T" happens after the car has gone into the border customs terminal
             }
         }
     
 
         if(truckRejected){
             System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
+            BorderSimulation.processedVehiclesCounter++;
+            Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
             return;
         }
 
@@ -136,6 +130,18 @@ public class Truck extends Vehicle{
                 // Change back to "F" -busy
                 changeTerminal("c2");
             
+                
+                // Change p3 back to "T"
+                changeTerminal("p3");
+                synchronized(queueLock){
+                    try {
+                        queueLock.notifyAll();
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.TRUCKLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
+                    }
+                }
+                
 
                 borderCrossingLogic();
             
@@ -153,12 +159,16 @@ public class Truck extends Vehicle{
 
                 if(truckRejected){
                     System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
+                    BorderSimulation.processedVehiclesCounter++;
+                    Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
                     return;
                 }
             }
         }
 
         System.out.println("Vehicle [" + this + "] has passed the border!");
+        BorderSimulation.processedVehiclesCounter++;
+        Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
         
     }
 
@@ -167,6 +177,7 @@ public class Truck extends Vehicle{
     private void policeCrossingLogic(){
         synchronized(stackLock){
             BorderSimulation.vehicleStack.pop();
+            Vehicle.printFirstFiveVehicles();
             try {
                 stackLock.notifyAll();        // Condition changed, now someone else is the first in line
             } catch (Exception e){

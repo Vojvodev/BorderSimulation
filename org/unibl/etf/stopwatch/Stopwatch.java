@@ -1,5 +1,6 @@
 package org.unibl.etf.stopwatch;
 
+import org.unibl.etf.GUI.Frame1;
 import java.util.Date;
 
 
@@ -27,7 +28,7 @@ public class Stopwatch extends Thread {
     public void run() {
         startStopwatch();
         while (running) {
-        System.out.println(getElapsedTime());                           // TODO: write time in some corner
+        Frame1.timer.setText(Long.toString(getElapsedTime()));
             try {
                 sleep(500);   
             } catch (Exception e) {

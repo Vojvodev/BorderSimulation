@@ -2,6 +2,7 @@ package org.unibl.etf.vehicles;
 
 
 import org.unibl.etf.BorderSimulation;
+import org.unibl.etf.GUI.Frame1;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.HashSet;
@@ -36,6 +37,8 @@ public class Car extends Vehicle{
 
     @Override
     public void run(){
+    	String whichTerminalToSetFree = "p1";
+    	
         synchronized(stackLock){
             while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
                 try {
@@ -68,48 +71,33 @@ public class Car extends Vehicle{
             synchronized(p1Lock){
                 // Change back to "F" -busy
                 changeTerminal("p1");
-                    
+                whichTerminalToSetFree = "p1";
 
                 policeCrossingLogic();
                 
         
-                // Change p1 back to "T" -free
-                changeTerminal("p1");
-                synchronized(queueLock){
-                    try {
-                        queueLock.notifyAll();
-                    } catch (Exception e){
-                        System.out.println("Error!");
-                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
-                    }
-                }
+                // Change back to "T" happens after the car has gone into the border customs terminal
             }
         }
         else if("T".equals(p2)){
             synchronized(p2Lock){
                 // Change back to "F" -busy
                 changeTerminal("p2");
-                    
+                whichTerminalToSetFree = "p2";
+                
 
                 policeCrossingLogic();
                 
         
-                // Change p2 back to "T" -free
-                changeTerminal("p2");
-                synchronized(queueLock){
-                    try {
-                        queueLock.notifyAll();
-                    } catch (Exception e){
-                        System.out.println("Error!");
-                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
-                    }
-                }
+                // Change back to "T" happens after the car has gone into the border customs terminal
             }
         }
 
         
         if(carRejected){
             System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
+            BorderSimulation.processedVehiclesCounter++;
+            Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
             return;
         }
          
@@ -133,6 +121,19 @@ public class Car extends Vehicle{
                 // Change back to "F" -busy
                 changeTerminal("c1");
             
+                
+                // Change p1 or p2 back to "T" -free
+                changeTerminal(whichTerminalToSetFree);
+                synchronized(queueLock){
+                    try {
+                        queueLock.notifyAll();
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.CARLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
+                    }
+                }
+                
+                
 
                 borderCrossingLogic();
 
@@ -151,7 +152,9 @@ public class Car extends Vehicle{
         }
 
         System.out.println("Vehicle [" + this + "] has passed the border!");
-
+        BorderSimulation.processedVehiclesCounter++;
+        Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
+        
     }
 
 
@@ -160,6 +163,7 @@ public class Car extends Vehicle{
     private void policeCrossingLogic(){
         synchronized(stackLock){
             BorderSimulation.vehicleStack.pop();
+            Vehicle.printFirstFiveVehicles();
             try {
                 stackLock.notifyAll();        // Condition changed, now someone else is the first in line
             } catch (Exception e){

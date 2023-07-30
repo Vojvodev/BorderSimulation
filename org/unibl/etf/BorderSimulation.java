@@ -1,6 +1,7 @@
 package org.unibl.etf;
 
 
+import org.unibl.etf.GUI.*;
 import org.unibl.etf.identifications.*;
 import org.unibl.etf.passengers.*;
 import org.unibl.etf.stopwatch.Stopwatch;
@@ -8,6 +9,7 @@ import org.unibl.etf.vehicles.*;
 
 import java.util.Scanner;
 import java.util.Date;
+import java.awt.EventQueue;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
@@ -17,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.lang.InterruptedException;
 import java.util.logging.*;
+
+import javax.swing.JOptionPane;
 
 
 public class BorderSimulation{
@@ -29,6 +33,7 @@ public class BorderSimulation{
 
     public static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();       // Doesn't change after the threads start
     public static Stack<Vehicle> vehicleStack = new Stack<Vehicle>();               // Does change
+    public static int processedVehiclesCounter = 0;
     
     private static final Logger MAINLOGGER   = Logger.getLogger(BorderSimulation.class.getName());
     public static final Logger VEHICLELOGGER = Logger.getLogger(Vehicle.class.getName());
@@ -40,9 +45,8 @@ public class BorderSimulation{
 
 
     public static void main(String args[]){
-        Stopwatch timer = new Stopwatch();
-        Scanner scan = new Scanner(System.in);
-        String option = "";
+        Stopwatch sWatch = new Stopwatch();
+        
         
         // Configuring loggers
         configureLogger();
@@ -69,25 +73,30 @@ public class BorderSimulation{
         // Simulation start
         System.out.println("\n---Simulation started---\n");
 
+        
+        // Summon the GUI
+        EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					Frame1 window = new Frame1();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+        
+        
+        // Start the counter
+        sWatch.setDaemon(true);
+        sWatch.start();
+
+        Vehicle.printFirstFiveVehicles();
+        
         for(Vehicle v : vehicleArray){
             v.start();
         }
-        timer.setDaemon(true);
-        timer.start();
         
-
-        //while (!"END".equals(option)) {                           // TODO: Instead of while() I need something to check if PAUSE button is pressed
-        //    option = scan.nextLine();
-        //    if ("PAUSE".equals(option)) {
-        //        pause = true;
-        //    }
-        //    if ("CONTINUE".equals(option)) {
-        //        pause = false;
-        //        resumeSimulation();
-        //    }
-        //}
-        //scan.close();
-
 
         try{
             for(Vehicle v : vehicleArray){
@@ -101,11 +110,12 @@ public class BorderSimulation{
         
         
         System.out.println("\n---Simulation ended---\n");
-
+        JOptionPane.showMessageDialog(null, "Simulation ended");
+        
     }
 
 
-    private static void resumeSimulation(){
+    public static void resumeSimulation(){
         for(Vehicle v : vehicleArray){
             synchronized(v){
                 try {

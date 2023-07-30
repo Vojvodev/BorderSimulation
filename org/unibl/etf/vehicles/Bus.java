@@ -3,6 +3,7 @@ package org.unibl.etf.vehicles;
 
 import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.passengers.Passenger;
+import org.unibl.etf.GUI.*;
 
 import java.util.HashSet;
 import java.io.File;
@@ -52,6 +53,8 @@ public class Bus extends Vehicle{
 
     @Override
     public void run(){
+    	String whichTerminalToSetFree = "p1";
+    	
         synchronized(stackLock){
             while(this.equals(BorderSimulation.vehicleStack.peek()) == false){      // Only the first in line looks to get to the terminals
                 try {
@@ -84,48 +87,34 @@ public class Bus extends Vehicle{
             synchronized(p1Lock){
                 // Change back to "F" -busy
                 changeTerminal("p1");
+                whichTerminalToSetFree = "p1";
 
-
+                
                 policeCrossingLogic();
 
 
-                // Change back to "T" -free
-                changeTerminal("p1");
-                synchronized(queueLock){
-                    try {
-                        queueLock.notifyAll();
-                    } catch (Exception e){
-                        System.out.println("Error!");
-                        BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
-                    }
-                }
+                // Change back to "T" happens after the car has gone into the border customs terminal
             }
         }
         else if("T".equals(p2)){
             synchronized(p2Lock){
                 // Change back to "F" -busy
                 changeTerminal("p2");
-
+                whichTerminalToSetFree = "p2";
+                
 
                 policeCrossingLogic();
 
 
-                // Change p2 back to "T" -free
-                changeTerminal("p2");
-                synchronized(queueLock){
-                    try {
-                        queueLock.notifyAll();
-                    } catch (Exception e){
-                        System.out.println("Error!");
-                        BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
-                    }
-                }
+                // Change back to "T" happens after the car has gone into the border customs terminal
             }
         }
         
 
         if(busRejected){
             System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
+            BorderSimulation.processedVehiclesCounter++;
+            Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
             return;
         }
 
@@ -147,10 +136,22 @@ public class Bus extends Vehicle{
 
         if("T".equals(c1)){
             synchronized(c1Lock){
-                // Change back to "F" -busy
+                // Change c1 back to "F" -busy
                 changeTerminal("c1");
 
+                
+                // Change p1 or p2 back to "T" -free
+                changeTerminal(whichTerminalToSetFree);
+                synchronized(queueLock){
+                    try {
+                        queueLock.notifyAll();
+                    } catch (Exception e){
+                        System.out.println("Error!");
+                        BorderSimulation.BUSLOGGER.log(Level.SEVERE, "Problems with notifyAll()!", e);
+                    }
+                }
 
+                
                 borderCrossingLogic();
 
 
@@ -169,13 +170,16 @@ public class Bus extends Vehicle{
                 if(busRejected){
                     createEvidentationBus(BORDER_EVIDENTATION);
                     System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
+                    BorderSimulation.processedVehiclesCounter++;
+                    Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
                     return;
                 }
             }
         }
     
         System.out.println("Vehicle [" + this + "] has passed the border!");
-        
+        BorderSimulation.processedVehiclesCounter++;
+        Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
     }
 
 
@@ -183,6 +187,7 @@ public class Bus extends Vehicle{
     private void policeCrossingLogic(){
         synchronized(stackLock){
             BorderSimulation.vehicleStack.pop();
+            Vehicle.printFirstFiveVehicles();
             try{
                 stackLock.notifyAll();        // Condition changed, now someone else is the first in line
             }

@@ -2,6 +2,7 @@ package org.unibl.etf.vehicles;
 
 
 import org.unibl.etf.BorderSimulation;
+import org.unibl.etf.GUI.Frame1;
 import org.unibl.etf.passengers.Passenger;
 
 import java.util.Random;
@@ -27,8 +28,9 @@ public abstract class Vehicle extends Thread{
     protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
  
     protected static volatile String p1, p2, p3, c1, c2;                    // To read terminal states
-    protected static final Object stackLock = new Object();
+    public static final Object stackLock = new Object();
     protected static final Object queueLock = new Object();
+    
     protected static final Object p1Lock = new Object();
     protected static final Object p2Lock = new Object();
     protected static final Object p3Lock = new Object();
@@ -200,4 +202,30 @@ public abstract class Vehicle extends Thread{
         
     }
 
+    
+    public static void printFirstFiveVehicles() {
+    	Vehicle[] tempVehicleArray = new Vehicle[5];
+    	
+    	for (int i = 0; i < 5; i++) {
+        	if (!BorderSimulation.vehicleStack.isEmpty()) {
+                tempVehicleArray[i] = BorderSimulation.vehicleStack.pop();
+            } else {
+                tempVehicleArray[i] = null; // In case the original stack has less than five elements
+            }
+		}
+		
+		Frame1.lblFifthVehicle.setText( tempVehicleArray[4] != null ? tempVehicleArray[4].toString() : "X");
+		Frame1.lblFourthVehicle.setText(tempVehicleArray[3] != null ? tempVehicleArray[3].toString() : "X");
+        Frame1.lblThirdVehicle.setText( tempVehicleArray[2] != null ? tempVehicleArray[2].toString() : "X");
+        Frame1.lblSecondVehicle.setText(tempVehicleArray[1] != null ? tempVehicleArray[1].toString() : "X");
+        Frame1.lblFirstVehicle.setText( tempVehicleArray[0] != null ? tempVehicleArray[0].toString() : "X");
+        
+        
+        // Push the elements back to the original stack to restore the order
+       	for (int i = 4; i >= 0; i--) {
+       		BorderSimulation.vehicleStack.push(tempVehicleArray[i]);
+        }
+    }
+    
+    
 }
