@@ -31,6 +31,9 @@ public class Frame2 extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
+
+				// Labels for evidentations
+
 		JLabel lblNewLabel = new JLabel("--- Police evidentation ---");
 		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 10));
 		lblNewLabel.setForeground(Color.RED);
@@ -43,6 +46,8 @@ public class Frame2 extends JFrame {
 		lblNewLabel_1.setBounds(25, 250, 222, 13);
 		contentPane.add(lblNewLabel_1);
 		
+
+				// Scrollable TextAreas for police evidentation and border customs evidentation
 		
 		JScrollPane scrollPane_1 = new JScrollPane();
 		scrollPane_1.setBounds(35, 33, 649, 187);

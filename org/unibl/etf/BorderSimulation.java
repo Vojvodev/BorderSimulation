@@ -25,22 +25,25 @@ import org.unibl.etf.vehicles.Vehicle;
 
 
 public class BorderSimulation{
-    protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
-    protected static final String MAIN_LOG_FILE       = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "mainLogs.log";
-    protected static final String VEHICLE_LOG_FILE    = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "vehicleLogs.log";
-    protected static final String CAR_LOG_FILE        = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "carLogs.log";
-    protected static final String BUS_LOG_FILE        = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "busLogs.log";
-    protected static final String TRUCK_LOG_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "logs" + File.separator + "truckLogs.log";
+    protected static final String TERMINALS_FILE   = "terminals.txt";
+    protected static final String MAIN_LOG_FILE    = "logs" + File.separator + "mainLogs.log";
+    protected static final String VEHICLE_LOG_FILE = "logs" + File.separator + "vehicleLogs.log";
+    protected static final String CAR_LOG_FILE     = "logs" + File.separator + "carLogs.log";
+    protected static final String BUS_LOG_FILE     = "logs" + File.separator + "busLogs.log";
+    protected static final String TRUCK_LOG_FILE   = "logs" + File.separator + "truckLogs.log";
+    protected static final String GUI_LOG_FILE     = "logs" + File.separator + "guiLogs.log";
+
 
     public static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();       // Doesn't change after the threads start
     public static Stack<Vehicle> vehicleStack = new Stack<Vehicle>();               // Does change
     public static int processedVehiclesCounter = 1;
     
-    private static final Logger MAINLOGGER   = Logger.getLogger(BorderSimulation.class.getName());
+    public static final Logger MAINLOGGER   = Logger.getLogger(BorderSimulation.class.getName());
     public static final Logger VEHICLELOGGER = Logger.getLogger(Vehicle.class.getName());
     public static final Logger CARLOGGER     = Logger.getLogger(Car.class.getName());
     public static final Logger BUSLOGGER     = Logger.getLogger(Bus.class.getName());
     public static final Logger TRUCKLOGGER   = Logger.getLogger(Truck.class.getName());
+    public static final Logger GUILOGGER     = Logger.getLogger(Frame1.class.getName());
 
     public static boolean pause = false;
 
@@ -52,6 +55,8 @@ public class BorderSimulation{
         // Configuring loggers
         configureLogger();
 
+        // Erase evidentation files
+        clearEvidentations();
 
         // Filling up the array with Vehicles
         if(createArray() == false){
@@ -117,6 +122,23 @@ public class BorderSimulation{
     }
 
 
+    private static void clearEvidentations(){
+        File border = new File(Vehicle.BORDER_EVIDENTATION);
+        File police = new File(Vehicle.POLICE_EVIDENTATION);
+        File serialization = new File(Vehicle.SERIALIZATION_FILE);
+        
+        if(border.exists())
+            border.delete();
+
+        if(police.exists())
+            police.delete();
+
+        if(serialization.exists())
+            serialization.delete();
+    
+    }
+
+
     public static void resumeSimulation(){
         for(Vehicle v : vehicleArray){
             synchronized(v){
@@ -173,25 +195,32 @@ public class BorderSimulation{
             Handler carHandler     = new FileHandler(CAR_LOG_FILE);
             Handler busHandler     = new FileHandler(BUS_LOG_FILE);
             Handler truckHandler   = new FileHandler(TRUCK_LOG_FILE);
+            Handler guiHandler     = new FileHandler(GUI_LOG_FILE);
             
+
             mainHandler.setFormatter(new SimpleFormatter());
             vehicleHandler.setFormatter(new SimpleFormatter());
             carHandler.setFormatter(new SimpleFormatter());
             busHandler.setFormatter(new SimpleFormatter());
             truckHandler.setFormatter(new SimpleFormatter());
+            guiHandler.setFormatter(new SimpleFormatter());
+
 
             MAINLOGGER.addHandler(mainHandler);
             VEHICLELOGGER.addHandler(vehicleHandler);
             CARLOGGER.addHandler(carHandler);
             BUSLOGGER.addHandler(busHandler);
             TRUCKLOGGER.addHandler(truckHandler);
+            GUILOGGER.addHandler(guiHandler);
+
 
             MAINLOGGER.setLevel(Level.ALL);
             VEHICLELOGGER.setLevel(Level.ALL);
             CARLOGGER.setLevel(Level.ALL);
             BUSLOGGER.setLevel(Level.ALL);
             TRUCKLOGGER.setLevel(Level.ALL);
-            
+            GUILOGGER.setLevel(Level.ALL);
+
         }
         catch(Exception e){
             System.out.println("Error!");

@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.logging.Level;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -26,12 +27,12 @@ import org.unibl.etf.vehicles.Vehicle;
 
 
 public class Frame1 {
-	private static final String PAUSE_BUTTON_IMG_FILE = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "images" + File.separator + "pause.jpg";
-	private static final String PLAY_BUTTON_IMG_FILE  = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "images" + File.separator + "play.jpg";
-	public static final String CAR_IMG_FILE		  	  = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "images" + File.separator + "car.jpg";
-	public static final String BUS_IMG_FILE      	  = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "images" + File.separator + "bus.jpg";
-	public static final String TRUCK_IMG_FILE         = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "images" + File.separator + "truck.jpg";
-	public static final String EMPTY_ICON_FILE 		  = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "images" + File.separator + "empty.jpg";
+	private static final String PAUSE_BUTTON_IMG_FILE = "images" + File.separator + "pause.jpg";
+	private static final String PLAY_BUTTON_IMG_FILE  = "images" + File.separator + "play.jpg";
+	public static final String CAR_IMG_FILE		  	  = "images" + File.separator + "car.jpg";
+	public static final String BUS_IMG_FILE      	  = "images" + File.separator + "bus.jpg";
+	public static final String TRUCK_IMG_FILE         = "images" + File.separator + "truck.jpg";
+	public static final String EMPTY_ICON_FILE 		  = "images" + File.separator + "empty.jpg";
 	
 	public JFrame frame;
 	public JButton btnPause = new JButton();
@@ -225,7 +226,7 @@ public class Frame1 {
 		frame.getContentPane().add(textAreaC2Dash);
 		
 		
-		// Labels for vehicle icons on the terminals, with mouse clicks
+				// Labels for vehicle icons on the terminals, with mouse clicks
 		
 		lblP1IMG.addMouseListener(new MouseAdapter() {
 			@Override
@@ -327,7 +328,7 @@ public class Frame1 {
 		frame.getContentPane().add(lblC2IMG);
 		
 		
-		// Button that creates Frame2 and shows all the evidentations
+				// Button that creates Frame2 and shows all the evidentations
 		
 		JButton btnShowEvidentations = new JButton("Show all evidentations");
 		btnShowEvidentations.addActionListener(new ActionListener() {
@@ -339,11 +340,11 @@ public class Frame1 {
 							Frame2 frame = new Frame2();
 							frame.setVisible(true);
 						} catch (Exception e) {
-							e.printStackTrace();
+							System.out.println("Error!");
+            				BorderSimulation.GUILOGGER.log(Level.SEVERE, "Exception during the creation of logger!", e);
 						}
 					}
-				});
-				
+				});	
 			}
 		});
 		btnShowEvidentations.setOpaque(false);

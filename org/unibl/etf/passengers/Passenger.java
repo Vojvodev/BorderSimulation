@@ -1,12 +1,12 @@
 package org.unibl.etf.passengers;
 
 
-import org.unibl.etf.identifications.PassengerId;
-
 import java.util.Random;
 import java.lang.Cloneable;
 import java.io.Serializable;
 import java.lang.CloneNotSupportedException;
+
+import org.unibl.etf.identifications.PassengerId;
 
 
 public class Passenger implements Cloneable, Serializable{

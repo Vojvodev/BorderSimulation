@@ -1,7 +1,11 @@
 package org.unibl.etf.stopwatch;
 
-import org.unibl.etf.GUI.Frame1;
+
 import java.util.Date;
+import java.util.logging.Level;
+
+import org.unibl.etf.BorderSimulation;
+import org.unibl.etf.GUI.Frame1;
 
 
 public class Stopwatch extends Thread {
@@ -38,6 +42,7 @@ public class Stopwatch extends Thread {
                 sleep(1000);   
             } catch (Exception e) {
                 System.out.println("Error!");
+                BorderSimulation.MAINLOGGER.log(Level.SEVERE, "Problems with sleep() in stopWatch!", e);
             }
         }
     }

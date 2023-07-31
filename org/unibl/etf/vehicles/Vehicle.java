@@ -22,10 +22,10 @@ import java.util.logging.*;
 
 
 public abstract class Vehicle extends Thread{
-    protected static final String SERIALIZATION_FILE  = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "NAUGHTY_LIST.binary";
-    public static final String POLICE_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "POLICIJSKA_KONTROLA.txt";
-    public static final String BORDER_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "CARINSKA_KONTROLA.txt";
-    protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
+    public static final String SERIALIZATION_FILE  = "evidentations" + File.separator + "NAUGHTY_LIST.binary";
+    public static final String POLICE_EVIDENTATION = "evidentations" + File.separator + "POLICIJSKA_KONTROLA.txt";
+    public static final String BORDER_EVIDENTATION = "evidentations" + File.separator + "CARINSKA_KONTROLA.txt";
+    protected static final String TERMINALS_FILE   = "terminals.txt";
  
     protected static volatile String p1, p2, p3, c1, c2;                    // To read terminal states
     public static final Object stackLock = new Object();
