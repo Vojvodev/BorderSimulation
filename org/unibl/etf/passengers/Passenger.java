@@ -10,7 +10,9 @@ import java.lang.CloneNotSupportedException;
 
 
 public class Passenger implements Cloneable, Serializable{
-    private PassengerId identification;
+	private static final long serialVersionUID = 1L;
+	
+	private PassengerId identification;
     private boolean luggage;
     private boolean forbiddenLuggage;
     private boolean driver;
@@ -64,5 +66,11 @@ public class Passenger implements Cloneable, Serializable{
         return t;
     }
 
-    // Can add some aditional atributes like if he is handicapped or something
+    
+    @Override
+    public String toString() {
+    	return identification.toString() + ( (forbiddenLuggage == true) ? "-with forbidden luggage" : "" );
+    }
+    
+    // Can add some additional attributes like if he is handicapped or something
 }

@@ -1,26 +1,27 @@
 package org.unibl.etf;
 
 
-import org.unibl.etf.GUI.*;
-import org.unibl.etf.identifications.*;
-import org.unibl.etf.passengers.*;
-import org.unibl.etf.stopwatch.Stopwatch;
-import org.unibl.etf.vehicles.*;
-
-import java.util.Scanner;
-import java.util.Date;
 import java.awt.EventQueue;
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
-import java.lang.InterruptedException;
-import java.util.logging.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import javax.swing.JOptionPane;
+
+import org.unibl.etf.GUI.Frame1;
+import org.unibl.etf.stopwatch.Stopwatch;
+import org.unibl.etf.vehicles.Bus;
+import org.unibl.etf.vehicles.Car;
+import org.unibl.etf.vehicles.Truck;
+import org.unibl.etf.vehicles.Vehicle;
 
 
 public class BorderSimulation{
@@ -33,7 +34,7 @@ public class BorderSimulation{
 
     public static ArrayList<Vehicle> vehicleArray = new ArrayList<Vehicle>();       // Doesn't change after the threads start
     public static Stack<Vehicle> vehicleStack = new Stack<Vehicle>();               // Does change
-    public static int processedVehiclesCounter = 0;
+    public static int processedVehiclesCounter = 1;
     
     private static final Logger MAINLOGGER   = Logger.getLogger(BorderSimulation.class.getName());
     public static final Logger VEHICLELOGGER = Logger.getLogger(Vehicle.class.getName());
@@ -110,7 +111,8 @@ public class BorderSimulation{
         
         
         System.out.println("\n---Simulation ended---\n");
-        JOptionPane.showMessageDialog(null, "Simulation ended");
+        JOptionPane.showMessageDialog(null, "Vehicles processed: " + (processedVehiclesCounter - 1) + " \nSimulation time: " + sWatch.getElapsedTime(), "Simulation ended!", 1);
+        sWatch.stopStopwatch();
         
     }
 

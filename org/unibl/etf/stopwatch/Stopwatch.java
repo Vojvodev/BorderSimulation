@@ -14,6 +14,11 @@ public class Stopwatch extends Thread {
         running = true;
     }
 
+    
+    public synchronized void stopStopwatch() {
+        running = false;
+    }
+
 
     public synchronized long getElapsedTime() {
         if (running) {
@@ -30,7 +35,7 @@ public class Stopwatch extends Thread {
         while (running) {
         Frame1.timer.setText(Long.toString(getElapsedTime()));
             try {
-                sleep(500);   
+                sleep(1000);   
             } catch (Exception e) {
                 System.out.println("Error!");
             }

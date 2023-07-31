@@ -9,7 +9,9 @@ import java.lang.CloneNotSupportedException;
 
 
 public class PassengerId implements Cloneable, Serializable{
-    private String name;
+	private static final long serialVersionUID = 1L;
+	
+	private String name;
     private boolean fakeId;
 
     public PassengerId(String name){
@@ -34,5 +36,11 @@ public class PassengerId implements Cloneable, Serializable{
 
     public Object clone() throws CloneNotSupportedException{
         return super.clone();
+    }
+
+    
+    @Override
+    public String toString() {
+    	return name + ((fakeId==true) ? "-with fake ID" : "");
     }
 }

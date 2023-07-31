@@ -23,8 +23,8 @@ import java.util.logging.*;
 
 public abstract class Vehicle extends Thread{
     protected static final String SERIALIZATION_FILE  = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "NAUGHTY_LIST.binary";
-    protected static final String POLICE_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "POLICIJSKA_KONTROLA.txt";
-    protected static final String BORDER_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "CARINSKA_KONTROLA.txt";
+    public static final String POLICE_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "POLICIJSKA_KONTROLA.txt";
+    public static final String BORDER_EVIDENTATION = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "evidentations" + File.separator + "CARINSKA_KONTROLA.txt";
     protected static final String TERMINALS_FILE      = "org" + File.separator + "unibl" + File.separator + "etf" + File.separator + "terminals.txt";
  
     protected static volatile String p1, p2, p3, c1, c2;                    // To read terminal states
@@ -203,6 +203,7 @@ public abstract class Vehicle extends Thread{
     }
 
     
+    // Prints first five vehicles in the stack, must be called every time the stack changes
     public static void printFirstFiveVehicles() {
     	Vehicle[] tempVehicleArray = new Vehicle[5];
     	
@@ -228,4 +229,45 @@ public abstract class Vehicle extends Thread{
     }
     
     
+    // Reads everything from one of the evidentation files
+    public static synchronized String readEvidentation(String file) {
+    	String line = "";
+    	String text = "";
+    	if((new File(file)).exists()) {
+    		try {
+    			BufferedReader reader = new BufferedReader(new FileReader(file));
+    			
+    			while((line = reader.readLine()) != null) {
+    				text += line + "\n";
+    			}
+    		
+    			reader.close();
+    		}
+    		catch(FileNotFoundException e){
+    			System.out.println("Error!");
+    			BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not read from POLICE_EVIDENTATION!", e);
+    		} 
+    		catch(IOException e1){
+    			System.out.println("Error!");
+    			BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not read using a reader!", e1);
+    		} 
+    	}
+    	
+    	return text;
+    }
+    
+
+    public int getVehicleId() {
+    	return this.id;
+    }
+    
+    
+    public String writePassengers() {
+    	String line = "";
+    	for(Passenger p : this.passengers) {
+    		line += p.toString() + "\n";
+    	}
+    	
+    	return line;
+    }
 }

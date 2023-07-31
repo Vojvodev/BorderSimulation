@@ -1,18 +1,19 @@
 package org.unibl.etf.vehicles;
 
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.EmptyStackException;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.logging.Level;
+
+import javax.swing.ImageIcon;
+
 import org.unibl.etf.BorderSimulation;
 import org.unibl.etf.GUI.Frame1;
 import org.unibl.etf.passengers.Passenger;
-
-import java.util.Random;
-import java.util.HashSet;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.util.Iterator;
-import java.util.EmptyStackException;
-import java.util.logging.*;
 
 
 public class Truck extends Vehicle{
@@ -94,6 +95,8 @@ public class Truck extends Vehicle{
                 changeTerminal("p3");
 
 
+                Frame1.lblP3IMG.setIcon(new ImageIcon(Frame1.TRUCK_IMG_FILE));
+                Frame1.lblP3IMG.setText("#" + this.id);
                 policeCrossingLogic();
 
 
@@ -103,9 +106,14 @@ public class Truck extends Vehicle{
     
 
         if(truckRejected){
+        	// Change p3 back to "T"
+        	changeTerminal("p3");
+        	
+        	// Delete truck icon from the terminal
+        	Frame1.lblP3IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
+        	
             System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
-            BorderSimulation.processedVehiclesCounter++;
-            Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
+            Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter++));
             return;
         }
 
@@ -133,6 +141,11 @@ public class Truck extends Vehicle{
                 
                 // Change p3 back to "T"
                 changeTerminal("p3");
+                
+                // Delete truck icon from the terminal
+                Frame1.lblP3IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
+                
+                
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
@@ -142,7 +155,9 @@ public class Truck extends Vehicle{
                     }
                 }
                 
-
+                
+                Frame1.lblC2IMG.setIcon(new ImageIcon(Frame1.TRUCK_IMG_FILE));
+                Frame1.lblC2IMG.setText("#" + this.id);
                 borderCrossingLogic();
             
 
@@ -159,16 +174,16 @@ public class Truck extends Vehicle{
 
                 if(truckRejected){
                     System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
-                    BorderSimulation.processedVehiclesCounter++;
-                    Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
+                    Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter++));
+                    Frame1.lblC2IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
                     return;
                 }
             }
         }
 
         System.out.println("Vehicle [" + this + "] has passed the border!");
-        BorderSimulation.processedVehiclesCounter++;
-        Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
+        Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter++));
+        Frame1.lblC2IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
         
     }
 
@@ -273,7 +288,7 @@ public class Truck extends Vehicle{
     }
 
 
-    // Notes that the bus has been rejected
+    // Notes that the truck has been rejected
     synchronized private void createEvidentationTruck(String FILE){
         boolean append = (new File(FILE)).exists();
         try{

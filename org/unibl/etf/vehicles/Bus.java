@@ -1,17 +1,18 @@
 package org.unibl.etf.vehicles;
 
 
-import org.unibl.etf.BorderSimulation;
-import org.unibl.etf.passengers.Passenger;
-import org.unibl.etf.GUI.*;
-
-import java.util.HashSet;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.BufferedWriter;
-import java.util.Iterator;
 import java.util.EmptyStackException;
-import java.util.logging.*;
+import java.util.Iterator;
+import java.util.logging.Level;
+
+import javax.swing.ImageIcon;
+
+import org.unibl.etf.BorderSimulation;
+import org.unibl.etf.GUI.Frame1;
+import org.unibl.etf.passengers.Passenger;
 
 
 public class Bus extends Vehicle{
@@ -90,6 +91,8 @@ public class Bus extends Vehicle{
                 whichTerminalToSetFree = "p1";
 
                 
+                Frame1.lblP1IMG.setIcon(new ImageIcon(Frame1.BUS_IMG_FILE));
+                Frame1.lblP1IMG.setText("#" + this.id);
                 policeCrossingLogic();
 
 
@@ -103,6 +106,8 @@ public class Bus extends Vehicle{
                 whichTerminalToSetFree = "p2";
                 
 
+                Frame1.lblP2IMG.setIcon(new ImageIcon(Frame1.BUS_IMG_FILE));
+                Frame1.lblP2IMG.setText("#" + this.id);
                 policeCrossingLogic();
 
 
@@ -112,9 +117,17 @@ public class Bus extends Vehicle{
         
 
         if(busRejected){
+        	// Change p1 or p2 back to "T" -free
+        	changeTerminal(whichTerminalToSetFree);
+        	
+        	// Delete the bus icon from the terminal
+        	if(whichTerminalToSetFree == "p1")
+                Frame1.lblP1IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
+            else
+            	Frame1.lblP2IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
+        	
             System.out.println("Vehicle [" + this + "] returned from the border [POLICE]!");
-            BorderSimulation.processedVehiclesCounter++;
-            Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
+            Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter++));
             return;
         }
 
@@ -142,6 +155,14 @@ public class Bus extends Vehicle{
                 
                 // Change p1 or p2 back to "T" -free
                 changeTerminal(whichTerminalToSetFree);
+                
+                // Delete the car icon from the terminal
+                if(whichTerminalToSetFree == "p1")
+                    Frame1.lblP1IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
+                else
+                	Frame1.lblP2IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
+                
+                
                 synchronized(queueLock){
                     try {
                         queueLock.notifyAll();
@@ -152,6 +173,8 @@ public class Bus extends Vehicle{
                 }
 
                 
+                Frame1.lblC1IMG.setIcon(new ImageIcon(Frame1.BUS_IMG_FILE));
+                Frame1.lblC1IMG.setText("#" + this.id);
                 borderCrossingLogic();
 
 
@@ -170,16 +193,17 @@ public class Bus extends Vehicle{
                 if(busRejected){
                     createEvidentationBus(BORDER_EVIDENTATION);
                     System.out.println("Vehicle [" + this + "] returned from the border [BORDER CUSTOMS]!");
-                    BorderSimulation.processedVehiclesCounter++;
-                    Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
+                    Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter++));
+                    Frame1.lblC1IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
                     return;
                 }
             }
         }
     
         System.out.println("Vehicle [" + this + "] has passed the border!");
-        BorderSimulation.processedVehiclesCounter++;
-        Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter));
+        Frame1.lblCount.setText(Integer.toString(BorderSimulation.processedVehiclesCounter++));
+        Frame1.lblC1IMG.setIcon(new ImageIcon(Frame1.EMPTY_ICON_FILE));
+        
     }
 
 
