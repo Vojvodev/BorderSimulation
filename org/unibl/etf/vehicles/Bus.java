@@ -45,7 +45,7 @@ public class Bus extends Vehicle{
             this.passengers.add(p2);
 
             for(int i = 0; i < numOfPeople - 2; i++){
-                Passenger px = new Passenger("N.N.", false);
+                Passenger px = new Passenger("N.N." + (i+1), false);
                 this.passengers.add(px);
             }
         }
@@ -250,8 +250,9 @@ public class Bus extends Vehicle{
 
             if(p.getIdentification().isFakeId()){
                 // Passenger added to the naughty list
-                badPassengers.add(p);
-                
+            	synchronized(badPassengers) {
+            		badPassengers.add(p);
+            	}
 
                 if(p.isDriver()){
                     numOfBadDrivers++;

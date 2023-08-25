@@ -29,7 +29,7 @@ public class Car extends Vehicle{
         this.passengers.add(p);
 
         for(int i = 0; i < numOfPeople - 1; i++){
-            Passenger p1 = new Passenger("N.N.", false);
+            Passenger p1 = new Passenger("N.N." + (i+1), false);
             this.passengers.add(p1);
         }
     }
@@ -225,8 +225,9 @@ public class Car extends Vehicle{
                 numOfBadPassengers++;
                 
                 // Passenger added to the naughty list
-                badPassengers.add(p);
-
+                synchronized(badPassengers) {
+            		badPassengers.add(p);
+            	}
 
                 if(p.isDriver()){                       
                     // Noted that the car has been rejected

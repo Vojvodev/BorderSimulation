@@ -231,7 +231,9 @@ public class Truck extends Vehicle{
 
             if(p.getIdentification().isFakeId()){
                 // Passenger added to the naughty list
-                badPassengers.add(p);
+            	synchronized(badPassengers) {
+            		badPassengers.add(p);
+            	}
 
                 if(p.isDriver()){
                     numOfBadDrivers++;

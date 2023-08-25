@@ -85,11 +85,13 @@ public class Frame1 {
 				if(!BorderSimulation.pause) {
 					BorderSimulation.pause = true;
 					btnPause.setIcon(new ImageIcon(PLAY_BUTTON_IMG_FILE));
+					System.out.println("--- SIMULATION PAUSED ---");
 				}
 				else if(BorderSimulation.pause) {
 					BorderSimulation.pause = false;
 					BorderSimulation.resumeSimulation();
 					btnPause.setIcon(new ImageIcon(PAUSE_BUTTON_IMG_FILE));
+					System.out.println("--- SIMULATION RESUMED ---");
 				}
 			}
 		});

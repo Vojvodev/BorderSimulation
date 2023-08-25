@@ -14,7 +14,9 @@ import java.io.FileReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.NullPointerException;
@@ -39,7 +41,7 @@ public abstract class Vehicle extends Thread{
 
     private static int counter = 0;
     protected HashSet<Passenger> passengers;
-    protected HashSet<Passenger> badPassengers;
+    public static HashSet<Passenger> badPassengers;							// Used as a shared object across threads but only uses the add method
     protected int numOfPeople;
     protected int id;
 
@@ -49,7 +51,7 @@ public abstract class Vehicle extends Thread{
 
         this.numOfPeople = rand.nextInt(1, capacity + 1);
         this.passengers = new HashSet<Passenger>();
-        this.badPassengers = new HashSet<Passenger>();
+        badPassengers = new HashSet<Passenger>();
         this.id = counter++;
     }
 
@@ -180,9 +182,9 @@ public abstract class Vehicle extends Thread{
     // Serializes data about every illegal passenger
     protected synchronized void serializeBadPassengers(){
         if(!badPassengers.isEmpty()){
-            boolean append1 = (new File(SERIALIZATION_FILE)).exists();
+            //boolean append1 = (new File(SERIALIZATION_FILE)).exists();
             try{
-                ObjectOutputStream stream1 = new ObjectOutputStream(new FileOutputStream(SERIALIZATION_FILE, append1));
+                ObjectOutputStream stream1 = new ObjectOutputStream(new FileOutputStream(SERIALIZATION_FILE, false));
                 stream1.writeObject(badPassengers);
                 stream1.close();
             }
@@ -200,6 +202,44 @@ public abstract class Vehicle extends Thread{
             }
         }
         
+    }
+
+
+    // Returns a String consisting of fined passengers - reads from SERIALIZATION_FILE
+    public static synchronized String deserializeBadPassengers() {
+    	HashSet<Passenger> loadedPassengers = new HashSet<Passenger>();
+    	String result = "";
+    	
+    	
+    	if( !(new File(SERIALIZATION_FILE)).exists() ) return result;
+    	
+    	try {
+    		ObjectInputStream input = new ObjectInputStream(new FileInputStream(SERIALIZATION_FILE));
+    		
+    		loadedPassengers = (HashSet<Passenger>)(input.readObject());
+    		
+    		input.close();
+    	}
+    	catch(FileNotFoundException e){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Could not deserialize from SERIALIZATION_FILE!", e);
+        }
+        catch(NullPointerException e1){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "SERIALIZATION_FILE argument is null!", e1);
+        }
+        catch(Exception e2){
+            System.out.println("Error!");
+            BorderSimulation.VEHICLELOGGER.log(Level.SEVERE, "Something wrong with I/O!", e2);
+        }
+    	
+    	
+    	for(Passenger p : loadedPassengers) {
+    		result += (p + "\n");
+    	}
+    	
+    	
+    	return result;
     }
 
     
